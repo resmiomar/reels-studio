@@ -1,0 +1,16 @@
+# venv / python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# секреты
+.env
+*.key
+
+# рантайм-выход (генерируемые видео/логи)
+jobs/
+*.log
+
+# временное
+.DS_Store

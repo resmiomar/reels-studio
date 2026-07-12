@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reels Studio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{ --bg:var(--tg-theme-bg-color,#12091f); --card:var(--tg-theme-secondary-bg-color,#1c1030);
+         --txt:var(--tg-theme-text-color,#fff); --hint:var(--tg-theme-hint-color,#9a92b8);
+         --acc:#5810E8; --acc2:#7d3cff; }
+  *{box-sizing:border-box} body{margin:0;font-family:-apple-system,Inter,system-ui,sans-serif;
+    background:var(--bg);color:var(--txt);padding:16px 16px 40px}
+  h1{font-size:22px;margin:6px 0 2px} .sub{color:var(--hint);font-size:13px;margin-bottom:18px}
+  label{display:block;font-size:13px;color:var(--hint);margin:14px 0 6px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .chip{background:var(--card);border:1.5px solid transparent;border-radius:14px;padding:12px;
+    text-align:center;font-size:14px;cursor:pointer;transition:.15s;user-select:none}
+  .chip.on{border-color:var(--acc2);background:linear-gradient(135deg,#2a1550,#1c1030)}
+  select{width:100%;background:var(--card);color:var(--txt);border:none;border-radius:14px;
+    padding:14px;font-size:15px;appearance:none}
+  button.go{width:100%;margin-top:22px;background:linear-gradient(135deg,var(--acc),var(--acc2));
+    color:#fff;border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:600;cursor:pointer}
+  button.go:disabled{opacity:.5}
+  .status{margin-top:20px;text-align:center;color:var(--hint);font-size:14px;display:none}
+  .spin{width:26px;height:26px;border:3px solid #ffffff30;border-top-color:var(--acc2);
+    border-radius:50%;animation:s 1s linear infinite;margin:0 auto 10px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  video{width:100%;border-radius:16px;margin-top:14px;background:#000}
+  .vwrap{display:none;margin-top:8px} .vlabel{font-size:13px;color:var(--hint);margin:14px 0 4px}
+  a.dl{display:block;text-align:center;background:var(--card);color:var(--txt);text-decoration:none;
+    border-radius:12px;padding:11px;margin-top:8px;font-size:14px}
+</style>
+</head>
+<body>
+  <h1>🎬 Reels Studio</h1>
+  <div class="sub">Промо-ролик за минуту — казах + рус, живой голос</div>
+
+  <label>Продукт</label>
+  <select id="project"></select>
+
+  <label>Язык</label>
+  <div class="grid" id="langs">
+    <div class="chip on" data-v="both">🇰🇿 + 🇷🇺 Оба</div>
+    <div class="chip" data-v="kk">🇰🇿 Казахский</div>
+    <div class="chip" data-v="ru">🇷🇺 Русский</div>
+    <div class="chip" data-v="_"></div>
+  </div>
+
+  <label>Голос</label>
+  <div class="grid" id="voices"></div>
+
+  <button class="go" id="go">Сгенерировать ✨</button>
+
+  <div class="status" id="status"><div class="spin"></div><span id="stxt">Генерирую…</span></div>
+  <div class="vwrap" id="vwrap"></div>
+
+<script>
+const tg = window.Telegram?.WebApp; try{ tg?.ready(); tg?.expand(); }catch(e){}
+const API = "";
+let sel = { langs:"both", voice:"laura", project:null };
+
+function pick(container, val, key){
+  [...container.children].forEach(c=>c.classList.toggle("on", c.dataset.v===val));
+  sel[key]=val;
+}
+document.getElementById("langs").addEventListener("click", e=>{
+  const c=e.target.closest(".chip"); if(!c||!c.dataset.v||c.dataset.v==="_")return;
+  pick(document.getElementById("langs"), c.dataset.v, "langs");
+});
+
+async function loadConfig(){
+  const r = await fetch(API+"/api/config"); const d = await r.json();
+  const ps = document.getElementById("project");
+  d.projects.forEach(p=>{ const o=document.createElement("option"); o.value=p.id; o.textContent=p.title; ps.appendChild(o); });
+  sel.project = d.projects[0]?.id;
+  ps.onchange = ()=> sel.project = ps.value;
+  const vc = document.getElementById("voices");
+  d.voices.forEach((v,i)=>{ const el=document.createElement("div"); el.className="chip"+(i===0?" on":"");
+    el.dataset.v=v; el.textContent = v.charAt(0).toUpperCase()+v.slice(1); vc.appendChild(el); });
+  vc.addEventListener("click", e=>{ const c=e.target.closest(".chip"); if(!c)return;
+    pick(vc, c.dataset.v, "voice"); });
+}
+
+const S = document.getElementById("status"), ST = document.getElementById("stxt"),
+      VW = document.getElementById("vwrap"), GO = document.getElementById("go");
+
+async function generate(){
+  GO.disabled=true; VW.style.display="none"; VW.innerHTML=""; S.style.display="block"; ST.textContent="Генерирую ролик…";
+  try{
+    const r = await fetch(API+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ project:sel.project, langs:sel.langs, voice:sel.voice, initData: tg?.initData||"" })});
+    const {job_id} = await r.json();
+    poll(job_id);
+  }catch(e){ ST.textContent="Ошибка запуска"; GO.disabled=false; }
+}
+
+async function poll(id){
+  for(let i=0;i<120;i++){
+    await new Promise(r=>setTimeout(r,2500));
+    const d = await (await fetch(API+"/api/status/"+id)).json();
+    if(d.status==="done"){ show(d.files); return; }
+    if(d.status==="error"){ ST.textContent="Ошибка генерации"; GO.disabled=false; console.log(d.error); return; }
+    ST.textContent = "Генерирую ролик… ("+(i*2.5|0)+"с)";
+  }
+  ST.textContent="Слишком долго, попробуйте ещё"; GO.disabled=false;
+}
+
+function show(files){
+  S.style.display="none"; GO.disabled=false; VW.style.display="block";
+  const names={kk:"🇰🇿 Казахская версия", ru:"🇷🇺 Русская версия"};
+  Object.entries(files).forEach(([lang,url])=>{
+    const l=document.createElement("div"); l.className="vlabel"; l.textContent=names[lang]||lang; VW.appendChild(l);
+    const v=document.createElement("video"); v.src=API+url; v.controls=true; v.playsInline=true; VW.appendChild(v);
+    const a=document.createElement("a"); a.className="dl"; a.href=API+url; a.download=""; a.textContent="⬇️ Скачать"; VW.appendChild(a);
+  });
+  try{ tg?.HapticFeedback?.notificationOccurred("success"); }catch(e){}
+}
+
+GO.onclick = generate;
+loadConfig();
+</script>
+</body>
+</html>
