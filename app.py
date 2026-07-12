@@ -27,22 +27,41 @@ VOICES = {
 PROJECTS = list(reel_engine.PROJECTS.keys())
 
 app = FastAPI(title="Reels SaaS")
-JOBS = {}  # job_id -> {status, project, langs, files, error}
+JOBS = {}  # job_id -> {status, project, langs, files, error, owner}
+_SEM = asyncio.Semaphore(int(os.environ.get("MAX_CONCURRENT", "2")))  # не форк-бомбить ffmpeg
+_RATE = {}  # user_id -> [timestamps за сутки]
+DAILY_QUOTA = int(os.environ.get("DAILY_QUOTA", "15"))
 
 
-def _valid_init_data(init_data: str) -> bool:
-    """Проверка подписи Telegram WebApp initData (если задан BOT_TOKEN)."""
+def _auth_user(init_data: str):
+    """Валидирует Telegram WebApp initData -> возвращает telegram user_id (str) или None.
+    Без BOT_TOKEN -> 'dev' (открытый локальный режим; на проде BOT_TOKEN обязателен)."""
     if not BOT_TOKEN:
-        return True  # MVP: без строгой проверки
+        return "dev"
     try:
         pairs = dict(parse_qsl(init_data, keep_blank_values=True))
         got = pairs.pop("hash", "")
         check = "\n".join(f"{k}={pairs[k]}" for k in sorted(pairs))
         secret = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
         calc = hmac.new(secret, check.encode(), hashlib.sha256).hexdigest()
-        return hmac.compare_digest(calc, got)
+        if not hmac.compare_digest(calc, got):
+            return None
+        user = json.loads(pairs.get("user", "{}"))
+        return str(user.get("id") or "") or None
     except Exception:
+        return None
+
+
+def _rate_ok(uid: str) -> bool:
+    """Не более DAILY_QUOTA генераций на пользователя в сутки (защита кошелька/квот)."""
+    now = time.time()
+    lst = [t for t in _RATE.get(uid, []) if now - t < 86400]
+    if len(lst) >= DAILY_QUOTA:
+        _RATE[uid] = lst
         return False
+    lst.append(now)
+    _RATE[uid] = lst
+    return True
 
 
 async def _run_job(job_id, project, langs, voice_id):
@@ -53,17 +72,19 @@ async def _run_job(job_id, project, langs, voice_id):
     env.update({
         "PROJECT": project,
         "OUT_DIR": out_dir,
+        "WORK": os.path.join(out_dir, "work"),   # ИЗОЛИРОВАННЫЙ скретч на job (иначе конкурентные джобы затирают друг друга)
         "VOICE_KK": f"eleven:{voice_id}",
         "VOICE_RU": f"eleven:{voice_id}",
     })
     if langs in ("kk", "ru"):
         env["LANGS_ONLY"] = langs
     try:
-        proc = await asyncio.create_subprocess_exec(
-            sys.executable, os.path.join(APP_DIR, "reel_engine.py"),
-            env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
-        )
-        out, _ = await proc.communicate()
+        async with _SEM:   # ограничение параллельных генераций
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, os.path.join(APP_DIR, "reel_engine.py"),
+                env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
+            )
+            out, _ = await proc.communicate()
         if proc.returncode != 0:
             job["status"] = "error"
             job["error"] = (out or b"").decode()[-800:]
@@ -93,17 +114,22 @@ async def config():
 @app.post("/api/generate")
 async def generate(req: Request):
     body = await req.json()
-    if not _valid_init_data(body.get("initData", "")):
-        raise HTTPException(401, "bad initData")
+    uid = _auth_user(body.get("initData", ""))
+    if not uid:
+        raise HTTPException(401, "auth required")
+    if not _rate_ok(uid):
+        raise HTTPException(429, "daily limit reached")
     project = body.get("project")
     langs = body.get("langs", "both")   # kk | ru | both
+    if langs not in ("kk", "ru", "both"):
+        langs = "both"
     voice = body.get("voice", "laura")
     if project not in reel_engine.PROJECTS:
         raise HTTPException(400, "unknown project")
     voice_id = VOICES.get(voice, VOICES["laura"])
     job_id = uuid.uuid4().hex[:12]
     JOBS[job_id] = {"status": "running", "project": project, "langs": langs,
-                    "files": {}, "error": "", "ts": time.time()}
+                    "files": {}, "error": "", "ts": time.time(), "owner": uid}
     asyncio.create_task(_run_job(job_id, project, langs, voice_id))
     return {"job_id": job_id}
 

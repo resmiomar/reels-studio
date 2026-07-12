@@ -10,7 +10,7 @@ import urllib.request, urllib.parse, json, os, subprocess, random
 
 FONT="/tmp/Montserrat.ttf"
 UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
-KEY=os.environ["PEXELS_KEY"]
+KEY=os.environ.get("PEXELS_KEY","")  # ленивая проверка: нужен при вызове api(), не при импорте
 W,H=1080,1920
 WORK=os.environ.get("WORK","/tmp/stock_reel_v4"); os.makedirs(WORK,exist_ok=True)
 MUSIC=os.environ.get("MUSIC","")  # свой mp3; если пусто — берём bundled reel_music.mp3 рядом; иначе генерим
