@@ -13,6 +13,16 @@ import os, hashlib, asyncio, html
 import httpx
 from fastapi import APIRouter, Request, HTTPException
 
+# локальный .env — грузим ДО core/reel_engine, они читают переменные на импорте.
+# (на хостинге переменные приходят из окружения, файла там нет)
+_ENV_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+if os.path.exists(_ENV_FILE):
+    for _line in open(_ENV_FILE):
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _v = _line.split("=", 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
+
 import core
 import reel_engine
 
@@ -151,10 +161,40 @@ async def webhook(secret: str, req: Request):
 
 async def setup():
     """Регистрирует webhook в Telegram при старте (если есть токен и публичный URL)."""
-    if not (BOT_TOKEN and PUBLIC_URL):
-        print("bot: BOT_TOKEN/PUBLIC_URL не заданы — бот выключен", flush=True)
+    if not BOT_TOKEN:
+        print("bot: BOT_TOKEN не задан — бот выключен", flush=True)
+        return
+    if not PUBLIC_URL:
+        print("bot: PUBLIC_URL не задан — вебхук не ставим (локальный режим: python bot.py)", flush=True)
         return
     url = f"{PUBLIC_URL}/tg/{WEBHOOK_SECRET}"
     r = await tg("setWebhook", url=url, allowed_updates=["message", "callback_query"],
                  drop_pending_updates=True)
     print("bot: setWebhook ->", r, flush=True)
+
+
+async def poll():
+    """Long-polling: бот работает без публичного URL — можно гонять локально, бесплатно."""
+    await tg("deleteWebhook", drop_pending_updates=True)
+    print("bot: polling запущен, жду сообщений…", flush=True)
+    offset = 0
+    while True:
+        try:
+            async with httpx.AsyncClient(timeout=70) as c:
+                r = await c.post(f"{API}/getUpdates", json={
+                    "offset": offset, "timeout": 60,
+                    "allowed_updates": ["message", "callback_query"]})
+                data = r.json()
+            for u in data.get("result", []):
+                offset = u["update_id"] + 1
+                try:
+                    await handle_update(u)
+                except Exception as e:
+                    print("bot error:", e, flush=True)
+        except Exception as e:
+            print("poll error:", e, flush=True)
+            await asyncio.sleep(3)
+
+
+if __name__ == "__main__":
+    asyncio.run(poll())
