@@ -37,8 +37,10 @@ WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET") or (
 
 router = APIRouter()
 
-LANGS = [("kk", "🇰🇿 Қазақша"), ("ru", "🇷🇺 Русский"), ("both", "🇰🇿+🇷🇺 Оба")]
+FLAG = {"kk": "🇰🇿", "ru": "🇷🇺", "zh": "🇨🇳", "de": "🇩🇪", "it": "🇮🇹",
+        "tr": "🇹🇷", "uk": "🇺🇦", "es": "🇪🇸", "fr": "🇫🇷", "uz": "🇺🇿"}
 VOICE_TITLES = {"laura": "🎙 Laura", "bala": "🎙 Bala"}
+PAID = ("kk", "ru")     # только эти два идут на платном клон-голосе -> спрашиваем голос
 
 # что пользователь уже выбрал: chat_id -> {"project":..., "langs":...}
 _PICK = {}
@@ -80,9 +82,10 @@ async def start_generation(chat_id: int, uid: str, project: str, langs: str, voi
         await tg("sendMessage", chat_id=chat_id,
                  text=f"⛔️ Дневной лимит исчерпан ({core.DAILY_QUOTA} видео в сутки). Возвращайся завтра.")
         return
+    n = len(core.langs_of(project)) if langs == "all" else 1
     await tg("sendMessage", chat_id=chat_id,
-             text="⏳ Генерирую видео…\nПодбираю стоковые кадры, озвучиваю клон-голосом и монтирую.\n"
-                  "Это займёт 1–3 минуты — пришлю файлом сюда же.")
+             text=f"⏳ Собираю роликов: {n}.\nПодбираю кадры под каждый язык, озвучиваю и монтирую.\n"
+                  f"Примерно {2*n}–{4*n} минут. Пришлю файлами сюда же.")
     job_id = core.new_job(project, langs, voice, uid)
     asyncio.create_task(_deliver(chat_id, job_id, project))
 
@@ -100,12 +103,14 @@ async def _deliver(chat_id: int, job_id: str, project: str):
         await tg("sendMessage", chat_id=chat_id, parse_mode="HTML",
                  text=f"❌ Не получилось собрать видео.\n<pre>{err}</pre>")
         return
-    titles = {"kk": "🇰🇿 Қазақша нұсқасы", "ru": "🇷🇺 Русская версия"}
-    for lang in ("kk", "ru"):
+    sent = 0
+    for lang in job.get("langs") or []:
         p = core.out_path(job_id, project, lang)
         if os.path.exists(p):
-            await send_video(chat_id, p, f"{titles[lang]} — {project}")
-    await tg("sendMessage", chat_id=chat_id, text="✅ Готово! Ещё одно — /start")
+            await send_video(chat_id, p, f"{FLAG.get(lang,'')} {core.LANG_NAME[lang]} · {project}")
+            sent += 1
+    await tg("sendMessage", chat_id=chat_id,
+             text=f"✅ Готово, роликов: {sent}. Ещё одно: /start")
 
 
 async def handle_update(u: dict):
@@ -127,15 +132,31 @@ async def handle_update(u: dict):
     await tg("answerCallbackQuery", callback_query_id=cq["id"])
 
     if data.startswith("p:"):
-        _PICK[chat_id] = {"project": data[2:]}
+        project = data[2:]
+        _PICK[chat_id] = {"project": project}
+        langs = core.langs_of(project)
+        rows = [[{"text": f"{FLAG.get(l,'')} {core.LANG_NAME[l]}", "callback_data": f"l:{l}"}]
+                for l in langs]
+        # по два языка в ряд, чтобы список из десяти не растягивался на экран
+        rows = [sum(rows[i:i + 2], []) for i in range(0, len(rows), 2)]
+        rows.append([{"text": f"🌍 Все языки ({len(langs)})", "callback_data": "l:all"}])
         await tg("editMessageText", chat_id=chat_id, message_id=cq["message"]["message_id"],
-                 text="Язык ролика:",
-                 reply_markup=kb([[{"text": t, "callback_data": f"l:{c}"}] for c, t in LANGS]))
+                 text="Язык ролика:", reply_markup=kb(rows))
 
     elif data.startswith("l:"):
-        _PICK.setdefault(chat_id, {})["langs"] = data[2:]
+        pick = _PICK.setdefault(chat_id, {})
+        pick["langs"] = data[2:]
+        project = pick.get("project")
+        chosen = core.langs_of(project) if pick["langs"] == "all" else [pick["langs"]]
+        # голос спрашиваем только там, где он платный и его правда слышно владельцу;
+        # остальные языки озвучиваются бесплатными Edge-голосами автоматически
+        if not any(l in PAID for l in chosen):
+            await tg("editMessageText", chat_id=chat_id, message_id=cq["message"]["message_id"],
+                     text=f"Готовлю {core.LANG_NAME.get(pick['langs'], pick['langs'])}…")
+            await start_generation(chat_id, uid, project, pick["langs"], "laura")
+            return
         await tg("editMessageText", chat_id=chat_id, message_id=cq["message"]["message_id"],
-                 text="Голос диктора:",
+                 text="Голос диктора (казахский и русский):",
                  reply_markup=kb([[{"text": VOICE_TITLES[v], "callback_data": f"v:{v}"}]
                                   for v in core.VOICES]))
 
@@ -145,7 +166,7 @@ async def handle_update(u: dict):
         if project not in reel_engine.PROJECTS:
             await tg("sendMessage", chat_id=chat_id, text="Начни заново: /start")
             return
-        await start_generation(chat_id, uid, project, pick.get("langs", "both"), data[2:])
+        await start_generation(chat_id, uid, project, pick.get("langs", "all"), data[2:])
 
 
 @router.post("/tg/{secret}")
