@@ -95,7 +95,10 @@ def find_clip(q,used):
         for v in d.get("videos",[]):
             if v["id"] in used: continue
             fs=[f for f in v["video_files"] if f.get("height")]
-            cand=sorted(fs,key=lambda f:abs((f["height"] or 0)-1920))
+            # берём САМЫЙ ЛЁГКИЙ файл, которого хватает на выход 1080x1920:
+            # тянуть UHD 2560x1440 бессмысленно — это втрое больше байт при том же результате
+            ok=[f for f in fs if (f["height"] or 0)>=1080]
+            cand=sorted(ok,key=lambda f:f["height"]) or sorted(fs,key=lambda f:-(f["height"] or 0))
             if cand: used.add(v["id"]); return v["id"],cand[0]["link"]
     return None,None
 def download(u,p,tries=3):
