@@ -8,7 +8,12 @@ env: PEXELS_KEY. Бесплатно. Кредит Pexels — в описании
 """
 import urllib.request, urllib.parse, json, os, subprocess, random
 
-FONT="/tmp/Montserrat.ttf"
+_HERE=os.path.dirname(os.path.abspath(__file__))
+FONT=os.environ.get("FONT") or os.path.join(_HERE,"assets","Montserrat.ttf")  # вложен в репо: без сети
+# запасные системные шрифты, если вложенного нет и скачать не вышло
+FONT_FALLBACKS=["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+                "/System/Library/Fonts/Helvetica.ttc"]
 UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 KEY=os.environ.get("PEXELS_KEY","")  # ленивая проверка: нужен при вызове api(), не при импорте
 W,H=1080,1920
@@ -160,16 +165,28 @@ def main():
             with urllib.request.urlopen(req,timeout=90) as r, open(mp3,"wb") as f: f.write(r.read())
             return [None,None]
         return [None,None]
-    def _ensure_font():
-        if not os.path.exists(FONT):
-            try:
-                url="https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf"
-                req=urllib.request.Request(url,headers={"User-Agent":UA})
-                open(FONT,"wb").write(urllib.request.urlopen(req,timeout=60).read())
-            except Exception: pass
+    def _download_font():
+        """Качаем во временный файл и переименовываем только целое — иначе пустышка
+        навсегда отравляет кэш (os.path.exists() потом считает шрифт готовым)."""
+        try:
+            url="https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf"
+            req=urllib.request.Request(url,headers={"User-Agent":UA})
+            with urllib.request.urlopen(req,timeout=60) as r: data=r.read()
+            if len(data)<50000: return False           # HTML-ошибка вместо шрифта
+            os.makedirs(os.path.dirname(FONT) or ".",exist_ok=True)
+            tmp=FONT+".part"
+            with open(tmp,"wb") as f: f.write(data)
+            os.replace(tmp,FONT)
+            return True
+        except Exception: return False
+    def _font_path():
+        if os.path.exists(FONT) and os.path.getsize(FONT)>50000: return FONT
+        if _download_font(): return FONT
+        for p in FONT_FALLBACKS:
+            if os.path.exists(p): return p
+        raise RuntimeError("нет ни одного пригодного шрифта: "+FONT)
     def font(sz):
-        _ensure_font()
-        f=ImageFont.truetype(FONT,sz)
+        f=ImageFont.truetype(_font_path(),sz)
         try: f.set_variation_by_axes([700])
         except Exception: pass
         return f
