@@ -23,14 +23,21 @@ if not MUSIC:
     _b=os.path.join(os.path.dirname(os.path.abspath(__file__)),"reel_music.mp3")
     if os.path.exists(_b): MUSIC=_b
 
-# произношение для ОЗВУЧКИ (не для субтитров): латиница/англ -> кириллица
-# Произношение брендов. ОДИНАКОВО в казахском И русском видео — нақ қазақша написание.
-# (Прим.: русский голос физически не выговаривает Ғ/Қ/ұ и прочтёт их как г/к/у;
-#  чтобы бренд ЗВУЧАЛ по-настоящему по-казахски в рус.видео — озвучивать бренд-слова
-#  казахским голосом, см. заметку в конце файла.)
-_BRANDS={"Telegram":"Телеграм","Qujat":"Құжат","Qyran":"Қыран","Qalqan":"Қалқан",
-         "Sabaq":"Сабақ","Galamtor":"Ғаламтор","Jel":"Жел","Ibook":"Айбук","ibook":"Айбук"}
-PHON={"kk":_BRANDS,"ru":_BRANDS}
+# Произношение брендов: только для ОЗВУЧКИ, написание на экране не трогаем.
+# Бренд НИКОГДА не читается по-английски ("eye-book"). В каждом языке своя запись,
+# подобранная так, чтобы местный синтезатор произнёс "АЙ-БУК".
+_BRAND_SOUND={
+ "kk":"Айбук","ru":"Айбук","uk":"Айбук",   # кириллица читается напрямую
+ "zh":"爱布克",                              # ài bù kè, по канону кит. брендов (爱奇艺)
+ "de":"Aibuk","it":"Aibuk","es":"Áibuk",   # ai=[ai], u=[u]; исп. ударение иначе съедет на конец
+ "tr":"Aybuk","uz":"Aybuk",                # тюркская латиница фонетична
+ "fr":"Aïbouk",                            # трема рвёт франц. ai=[ɛ], ou=[u]
+}
+# казахские бренды пользователя — точное қазақша написание в KZ и RU роликах
+_KZ_BRANDS={"Telegram":"Телеграм","Qujat":"Құжат","Qyran":"Қыран","Qalqan":"Қалқан",
+            "Sabaq":"Сабақ","Galamtor":"Ғаламтор","Jel":"Жел"}
+PHON={l:{**(_KZ_BRANDS if l in ("kk","ru") else {}),"Ibook":b,"ibook":b}
+      for l,b in _BRAND_SOUND.items()}
 def phon(t,lang):
     for a,b in PHON.get(lang,{}).items(): t=t.replace(a,b)
     return t
@@ -40,52 +47,130 @@ def phon(t,lang):
 # несколько БЕСПЛАТНЫХ платформ+голосов на язык -> чередуются для разнообразия.
 # формат (engine, id). engine: edge | gtts | mms. env override: VOICE_KK="mms:facebook/mms-tts-kaz"
 VOICES={
- # клоны голоса пользователя (ElevenLabs v3) — казах БЕЗ акцента + человеческий.
- # Laura + Bala чередуются (разнообразие). Форсить: VOICE_KK="eleven:xKWShjEXraJurmIX5TZM"
- # Laura=xKWShjEXraJurmIX5TZM, Bala=M4jzBCMPD6005WAnM0H9
+ # ПЛАТНО (ElevenLabs) — только там, где качество критично и слышно владельцу:
+ # клоны его собственного голоса, живой казах БЕЗ акцента. Laura + Bala чередуются.
  "kk":[("eleven","xKWShjEXraJurmIX5TZM"),("eleven","M4jzBCMPD6005WAnM0H9")],
  "ru":[("eleven","xKWShjEXraJurmIX5TZM"),("eleven","M4jzBCMPD6005WAnM0H9")],
+ # БЕСПЛАТНО (Edge neural) — остальные языки. Носителю звучит естественно,
+ # платить за них ElevenLabs смысла нет. Две озвучки на язык: М+Ж, чередуются.
+ "zh":[("edge","zh-CN-XiaoxiaoNeural"),("edge","zh-CN-YunxiNeural")],
+ "de":[("edge","de-DE-SeraphinaMultilingualNeural"),("edge","de-DE-ConradNeural")],
+ "it":[("edge","it-IT-ElsaNeural"),("edge","it-IT-DiegoNeural")],
+ "tr":[("edge","tr-TR-EmelNeural"),("edge","tr-TR-AhmetNeural")],
+ "uk":[("edge","uk-UA-PolinaNeural"),("edge","uk-UA-OstapNeural")],
+ "es":[("edge","es-ES-ElviraNeural"),("edge","es-ES-AlvaroNeural")],
+ "fr":[("edge","fr-FR-DeniseNeural"),("edge","fr-FR-RemyMultilingualNeural")],
+ "uz":[("edge","uz-UZ-MadinaNeural"),("edge","uz-UZ-SardorNeural")],
 }
+LANG_CODE={"kk":"KZ","ru":"RU","zh":"ZH","de":"DE","it":"IT",
+           "tr":"TR","uk":"UK","es":"ES","fr":"FR","uz":"UZ"}
+LANG_NAME={"kk":"Қазақша","ru":"Русский","zh":"中文","de":"Deutsch","it":"Italiano",
+           "tr":"Türkçe","uk":"Українська","es":"Español","fr":"Français","uz":"O‘zbekcha"}
 # ПРОЕКТЫ пользователя. Выбор через env PROJECT (по умолч. qujat). Кадры — строго по теме!
 PROJECT=os.environ.get("PROJECT","qujat")
+# У КАЖДОГО ЯЗЫКА СВОИ ЗАПРОСЫ К СТОКУ — это не избыточность:
+#  1) одинаковые кадры соцсети метят как дубликат и режут охват;
+#  2) типаж людей должен совпадать с аудиторией языка.
+# Бренд в тексте пишем "ibook", озвучку правит PHON (см. выше).
 PROJECTS={
  # Qujat — бухгалтерия/налоги. Кадры: документы, налоги, калькулятор, таблицы. НЕ трейдинг-графики!
- "qujat":dict(title={"kk":"САЛЫҚ ЕНДІ — ОҢАЙ","ru":"НАЛОГИ — ЭТО ЛЕГКО"}, scenes=[
-   dict(q="financial documents paperwork office desk",
-        kk="Бухгалтерия басыңды ауыртып жүр ме?", ru="Бухгалтерия отнимает всё твоё время?"),
-   dict(q="calculator counting money banknotes finance",
-        kk="Құжат салық пен есептерді өзі санайды.", ru="Құжат сам считает налоги и отчёты."),
-   dict(q="accountant signing invoice documents pen desk",
-        kk="Есеп-қисап бір минутта дайын болады.", ru="Отчёт готов всего за одну минуту."),
-   dict(q="accounting spreadsheet table laptop screen office",
-        kk="Телеграмдағы бот та, сайт та дайын.", ru="В Телеграме есть и бот, и сайт."),
-   dict(q="asian business people meeting handshake office",
-        kk="Қазір тегін бастап көріңіз, Құжатқа жазыңыз!", ru="Начните бесплатно, напишите в Құжат!"),
- ]),
- # ibook (Айбук) — брондау/booking маркетплейс. Кадры: телефон-қосымша, қонақүй, төлем, саяхат.
- "ibook":dict(title={"kk":"БРОНЬДІ ОҢАЙ ЖАСА","ru":"БРОНИРУЙ ЛЕГКО"}, scenes=[
-   dict(q="hands using smartphone booking travel app",
-        kk="Брондау деген қиынға соғып жүр ме?", ru="Бронировать долго и неудобно?"),
-   dict(q="modern hotel room interior travel",
-        kk="Айбук — бәрін бір қосымшада брондайсың.", ru="Айбук — бронируй всё в одном приложении."),
-   dict(q="asian woman booking appointment smartphone online",
-        kk="Қонақүй, қызмет, орынды бірнеше түртумен таңдайсың.", ru="Отель, услугу, место — в пару касаний."),
-   dict(q="online payment smartphone mobile checkout",
-        kk="Онлайн төле, растауды бірден ал.", ru="Оплати онлайн, получи подтверждение сразу."),
-   dict(q="asian traveler happy using phone city street",
-        kk="Қазір Айбукты жүктеп алыңыз!", ru="Скачайте Айбук прямо сейчас!"),
- ]),
+ "qujat":{"kk":dict(title="САЛЫҚ ЕНДІ ОҢАЙ",scenes=[
+   dict(t="Бухгалтерия басыңды ауыртып жүр ме?",q="financial documents paperwork office desk"),
+   dict(t="Құжат салық пен есептерді өзі санайды.",q="calculator counting money banknotes finance"),
+   dict(t="Есеп-қисап бір минутта дайын болады.",q="accountant signing invoice documents pen desk"),
+   dict(t="Телеграмдағы бот та, сайт та дайын.",q="accounting spreadsheet table laptop screen office"),
+   dict(t="Қазір тегін бастап көріңіз, Құжатқа жазыңыз!",q="asian business people meeting handshake office"),
+  ]),
+  "ru":dict(title="НАЛОГИ ЭТО ЛЕГКО",scenes=[
+   dict(t="Бухгалтерия отнимает всё твоё время?",q="tired accountant paperwork desk evening"),
+   dict(t="Құжат сам считает налоги и отчёты.",q="calculator invoice documents office table"),
+   dict(t="Отчёт готов всего за одну минуту.",q="businesswoman signing documents office desk"),
+   dict(t="В Телеграме есть и бот, и сайт.",q="person using laptop spreadsheet work"),
+   dict(t="Начните бесплатно, напишите в Құжат!",q="business people handshake meeting office"),
+  ])},
+ # ibook — booking-маркетплейс: бронь услуг и мест. Кадры: телефон, салон, отель, оплата.
+ "ibook":{
+  "kk":dict(title="БРОНЬДІ ОҢАЙ ЖАСА",scenes=[
+   dict(t="Брондау деген қиынға соғып жүр ме?",q="hands using smartphone booking travel app"),
+   dict(t="ibook, бәрін бір қосымшада брондайсың.",q="modern hotel room interior travel"),
+   dict(t="Қонақүй, қызмет, орынды бірнеше түртумен таңдайсың.",q="asian woman booking appointment smartphone online"),
+   dict(t="Онлайн төле, растауды бірден ал.",q="online payment smartphone mobile checkout"),
+   dict(t="Қазір ibookты жүктеп алыңыз!",q="asian traveler happy using phone city street"),
+  ]),
+  "ru":dict(title="БРОНИРУЙ ЛЕГКО",scenes=[
+   dict(t="Бронировать долго и неудобно?",q="person frustrated waiting phone call"),
+   dict(t="ibook, бронируй всё в одном приложении.",q="woman using booking app smartphone home"),
+   dict(t="Отель, услугу, место, в пару касаний.",q="beauty salon manicure client hands"),
+   dict(t="Оплати онлайн, получи подтверждение сразу.",q="contactless payment smartphone terminal"),
+   dict(t="Скачайте ibook прямо сейчас!",q="happy woman smiling walking city street"),
+  ]),
+  "zh":dict(title="预约就该这么轻松",scenes=[
+   dict(t="还在打电话预约，等半天没回复？",q="asian woman frustrated phone call"),
+   dict(t="ibook，所有预约一个应用搞定。",q="asian woman using smartphone app"),
+   dict(t="酒店、美容、按摩，动动手指就搞定。",q="asian woman beauty salon appointment"),
+   dict(t="线上付款，马上收到确认通知。",q="asian woman mobile payment smartphone"),
+   dict(t="现在就下载ibook，约起来！",q="happy asian woman smiling smartphone"),
+  ]),
+  "de":dict(title="EINFACH BUCHEN",scenes=[
+   dict(t="Buchen dauert ewig und nervt dich jedes Mal?",q="frustrated woman waiting phone cafe"),
+   dict(t="Mit ibook buchst du alles in einer App.",q="young woman using smartphone city"),
+   dict(t="Hotel, Termin oder Salon, mit wenigen Klicks gebucht.",q="hair salon stylist happy client"),
+   dict(t="Bezahl online, deine Bestätigung kommt sofort.",q="online payment smartphone card hands"),
+   dict(t="Hol dir ibook jetzt in deinem App Store.",q="smiling woman smartphone european street"),
+  ]),
+  "it":dict(title="PRENOTA FACILE",scenes=[
+   dict(t="Prenotare ti sembra sempre una perdita di tempo?",q="woman annoyed waiting phone call"),
+   dict(t="Con ibook prenoti tutto in un'unica app.",q="woman using booking app smartphone"),
+   dict(t="Hotel, parrucchiere o ristorante, bastano pochi tocchi.",q="boutique hotel reception check in"),
+   dict(t="Paghi online e ricevi subito la conferma.",q="online payment credit card smartphone"),
+   dict(t="Scarica ibook adesso, la prima prenotazione ti aspetta.",q="happy young woman smiling smartphone city"),
+  ]),
+  "tr":dict(title="KOLAY REZERVASYON",scenes=[
+   dict(t="Rezervasyon yapmak neden bu kadar zor?",q="young turkish woman frustrated with phone"),
+   dict(t="ibook ile her şeyi tek uygulamadan ayırt.",q="turkish woman using smartphone app cafe"),
+   dict(t="Otel, salon, randevu, birkaç dokunuşla hazır.",q="istanbul boutique hotel reception guest checkin"),
+   dict(t="Online öde, onayını saniyeler içinde al.",q="woman paying online with phone shop"),
+   dict(t="ibook'u hemen indir, sıra sende!",q="happy turkish woman smiling holding phone"),
+  ]),
+  "uk":dict(title="БРОНЮЙ ЛЕГКО",scenes=[
+   dict(t="Набридло дзвонити, чекати й бронювати годинами?",q="young woman annoyed waiting phone call"),
+   dict(t="ibook, бронюй усе в одному застосунку.",q="woman using booking app smartphone home"),
+   dict(t="Готель, послуга, місце, усе за кілька дотиків.",q="modern hair salon interior hotel reception"),
+   dict(t="Оплати онлайн і одразу отримай підтвердження.",q="woman paying online card smartphone cafe"),
+   dict(t="Завантажуй ibook вже зараз і бронюй легко!",q="happy european woman smiling holding smartphone"),
+  ]),
+  "es":dict(title="RESERVA FÁCIL",scenes=[
+   dict(t="¿Sigues perdiendo el tiempo llamando para reservar una cita?",q="stressed woman phone call home"),
+   dict(t="Con ibook lo reservas todo desde una sola app.",q="young european woman smartphone app"),
+   dict(t="Hotel, peluquería o spa, todo en un par de toques.",q="hair salon appointment client mediterranean"),
+   dict(t="Paga online y recibe tu confirmación al instante.",q="woman online payment card phone"),
+   dict(t="Descarga ibook ahora y reserva sin complicarte la vida.",q="happy woman smiling smartphone city"),
+  ]),
+  "fr":dict(title="RÉSERVE FACILEMENT",scenes=[
+   dict(t="Tu galères encore à réserver un rendez-vous ?",q="frustrated woman waiting phone call"),
+   dict(t="Avec ibook, tu réserves tout dans une seule appli.",q="young woman using smartphone app"),
+   dict(t="Un hôtel, un salon, une table, en deux clics.",q="hair salon client hotel reception"),
+   dict(t="Paie en ligne, ta confirmation arrive tout de suite.",q="woman paying online with phone"),
+   dict(t="Télécharge ibook maintenant, ta prochaine réservation t'attend.",q="happy woman smiling phone street"),
+  ]),
+  "uz":dict(title="OSON BAND QIL",scenes=[
+   dict(t="Band qilish uchun yana qo‘ng‘iroq qilyapsanmi?",q="asian woman frustrated phone call"),
+   dict(t="ibook, hammasini bitta ilovada band qil.",q="asian woman using smartphone app"),
+   dict(t="Mehmonxona, salon, xizmat, bir necha bosishda tayyor.",q="asian woman hotel reception checkin"),
+   dict(t="Onlayn to‘lov qil, tasdiqni darhol ol.",q="asian customer paying phone contactless"),
+   dict(t="ibookni hoziroq telefoningga yuklab ol!",q="happy asian woman smiling smartphone"),
+  ]),
+ },
 }
-P=PROJECTS[PROJECT]; SCENES=P["scenes"]
+P=PROJECTS[PROJECT]
 OUTDIR=os.environ.get("OUT_DIR",os.path.expanduser("~/Downloads"))
 os.makedirs(OUTDIR,exist_ok=True)
-# язык(и) можно ограничить через env LANGS_ONLY="kk" или "ru"
-_only=os.environ.get("LANGS_ONLY","")
-LANGS={
- "kk": dict(rate="-4%", title=P["title"]["kk"], out=f"{OUTDIR}/{PROJECT}-STOCK-KZ.mp4"),
- "ru": dict(rate="+0%", title=P["title"]["ru"], out=f"{OUTDIR}/{PROJECT}-STOCK-RU.mp4"),
-}
-if _only in ("kk","ru"): LANGS={_only:LANGS[_only]}
+LANGS={l:dict(rate="-4%" if l=="kk" else "+0%", title=P[l]["title"], scenes=P[l]["scenes"],
+              out=f"{OUTDIR}/{PROJECT}-STOCK-{LANG_CODE[l]}.mp4")
+       for l in LANG_CODE if l in P}
+# LANGS_ONLY="kk" или список "kk,ru,de" — иначе рендерим все языки проекта
+_only=[x.strip() for x in os.environ.get("LANGS_ONLY","").split(",") if x.strip()]
+if _only: LANGS={l:LANGS[l] for l in _only if l in LANGS}
 
 def api(u):
     return json.load(urllib.request.urlopen(urllib.request.Request(u,headers={"Authorization":KEY,"User-Agent":UA}),timeout=20))
@@ -243,14 +328,14 @@ def main():
         else: engine,vid=random.choice(VOICES[lang])
         print(f"=== {lang}: движок {engine} голос {vid} ===",flush=True)
         clips=[]; D=[]; spans=[]; voices=[]
-        for i,s in enumerate(SCENES):
+        for i,s in enumerate(cfg["scenes"]):
             print(f"[{lang} {i}] '{s['q']}'",flush=True)
             cid,link=find_clip(s["q"],used)
             if not link: print("   ! нет клипа"); continue
             cp=f"{WORK}/{lang}_c{i}.mp4"
             if not download(link,cp): continue
             mp3=f"{WORK}/{lang}_l{i}.mp3"
-            sp=gen_voice(engine,vid,phon(s[lang],lang),cfg["rate"],mp3)
+            sp=gen_voice(engine,vid,phon(s["t"],lang),cfg["rate"],mp3)
             clips.append(cp); D.append(dur(mp3)); spans.append(sp); voices.append(mp3)
             print(f"   clip={cid} {round(D[-1],2)}s",flush=True)
         N=len(clips)
