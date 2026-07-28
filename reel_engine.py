@@ -6,9 +6,14 @@ stock_reel.py — авто-агент: тема -> 9:16 Reels из беспла�
 Бренд-слова произносятся по-местному (PHON), написание не меняется.
 env: PEXELS_KEY. Бесплатно. Кредит Pexels — в описании поста.
 """
-import urllib.request, urllib.parse, json, os, subprocess, random
+import urllib.request, urllib.parse, json, os, subprocess, random, time
 
-FONT="/tmp/Montserrat.ttf"
+_HERE=os.path.dirname(os.path.abspath(__file__))
+FONT=os.environ.get("FONT") or os.path.join(_HERE,"assets","Montserrat.ttf")  # вложен в репо: без сети
+# запасные системные шрифты, если вложенного нет и скачать не вышло
+FONT_FALLBACKS=["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+                "/System/Library/Fonts/Helvetica.ttc"]
 UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 KEY=os.environ.get("PEXELS_KEY","")  # ленивая проверка: нужен при вызове api(), не при импорте
 W,H=1080,1920
@@ -90,11 +95,29 @@ def find_clip(q,used):
         for v in d.get("videos",[]):
             if v["id"] in used: continue
             fs=[f for f in v["video_files"] if f.get("height")]
-            cand=sorted(fs,key=lambda f:abs((f["height"] or 0)-1920))
+            # берём САМЫЙ ЛЁГКИЙ файл, которого хватает на выход 1080x1920:
+            # тянуть UHD 2560x1440 бессмысленно — это втрое больше байт при том же результате
+            ok=[f for f in fs if (f["height"] or 0)>=1080]
+            cand=sorted(ok,key=lambda f:f["height"]) or sorted(fs,key=lambda f:-(f["height"] or 0))
             if cand: used.add(v["id"]); return v["id"],cand[0]["link"]
     return None,None
-def download(u,p):
-    with urllib.request.urlopen(urllib.request.Request(u,headers={"User-Agent":UA}),timeout=90) as r,open(p,"wb") as f: f.write(r.read())
+def download(u,p,tries=3):
+    """Качаем во временный файл с ретраями. Pexels регулярно рвёт соединение на середине
+    (IncompleteRead) — без этого одна оборванная загрузка роняла весь ролик."""
+    last=None
+    for a in range(tries):
+        try:
+            req=urllib.request.Request(u,headers={"User-Agent":UA})
+            with urllib.request.urlopen(req,timeout=120) as r: data=r.read()
+            if len(data)<10000: raise RuntimeError(f"подозрительно мало данных: {len(data)} б")
+            tmp=p+".part"
+            with open(tmp,"wb") as f: f.write(data)
+            os.replace(tmp,p)          # частичный файл никогда не станет "готовым" клипом
+            return True
+        except Exception as e:
+            last=e; print(f"   ! попытка {a+1}/{tries}: {e}",flush=True); time.sleep(2*(a+1))
+    print(f"   ! сцена пропущена: {last}",flush=True)
+    return False
 def dur(p):
     r=subprocess.run(["ffprobe","-v","quiet","-show_entries","format=duration","-of","json",p],capture_output=True,text=True)
     try: return float(json.loads(r.stdout)["format"]["duration"])
@@ -160,16 +183,28 @@ def main():
             with urllib.request.urlopen(req,timeout=90) as r, open(mp3,"wb") as f: f.write(r.read())
             return [None,None]
         return [None,None]
-    def _ensure_font():
-        if not os.path.exists(FONT):
-            try:
-                url="https://github.com/google/fonts/raw/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf"
-                req=urllib.request.Request(url,headers={"User-Agent":UA})
-                open(FONT,"wb").write(urllib.request.urlopen(req,timeout=60).read())
-            except Exception: pass
+    def _download_font():
+        """Качаем во временный файл и переименовываем только целое — иначе пустышка
+        навсегда отравляет кэш (os.path.exists() потом считает шрифт готовым)."""
+        try:
+            url="https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf"
+            req=urllib.request.Request(url,headers={"User-Agent":UA})
+            with urllib.request.urlopen(req,timeout=60) as r: data=r.read()
+            if len(data)<50000: return False           # HTML-ошибка вместо шрифта
+            os.makedirs(os.path.dirname(FONT) or ".",exist_ok=True)
+            tmp=FONT+".part"
+            with open(tmp,"wb") as f: f.write(data)
+            os.replace(tmp,FONT)
+            return True
+        except Exception: return False
+    def _font_path():
+        if os.path.exists(FONT) and os.path.getsize(FONT)>50000: return FONT
+        if _download_font(): return FONT
+        for p in FONT_FALLBACKS:
+            if os.path.exists(p): return p
+        raise RuntimeError("нет ни одного пригодного шрифта: "+FONT)
     def font(sz):
-        _ensure_font()
-        f=ImageFont.truetype(FONT,sz)
+        f=ImageFont.truetype(_font_path(),sz)
         try: f.set_variation_by_axes([700])
         except Exception: pass
         return f
@@ -207,19 +242,23 @@ def main():
         if ov and ":" in ov: engine,vid=ov.split(":",1)
         else: engine,vid=random.choice(VOICES[lang])
         print(f"=== {lang}: движок {engine} голос {vid} ===",flush=True)
-        clips=[]; D=[]; spans=[]
+        clips=[]; D=[]; spans=[]; voices=[]
         for i,s in enumerate(SCENES):
             print(f"[{lang} {i}] '{s['q']}'",flush=True)
             cid,link=find_clip(s["q"],used)
             if not link: print("   ! нет клипа"); continue
-            cp=f"{WORK}/{lang}_c{i}.mp4"; download(link,cp)
+            cp=f"{WORK}/{lang}_c{i}.mp4"
+            if not download(link,cp): continue
             mp3=f"{WORK}/{lang}_l{i}.mp3"
             sp=gen_voice(engine,vid,phon(s[lang],lang),cfg["rate"],mp3)
-            clips.append(cp); D.append(dur(mp3)); spans.append(sp)
+            clips.append(cp); D.append(dur(mp3)); spans.append(sp); voices.append(mp3)
             print(f"   clip={cid} {round(D[-1],2)}s",flush=True)
-        N=len(clips); D[-1]+=0.5
+        N=len(clips)
+        if N<2: raise RuntimeError(f"{lang}: собрано сцен {N} — нечего монтировать (нет клипов/сети)")
+        D[-1]+=0.5
+        # список строим по реально скачанным сценам: при пропуске нумерация файлов рвётся
         with open(f"{WORK}/{lang}_vl.txt","w") as f:
-            for i in range(N): f.write(f"file '{WORK}/{lang}_l{i}.mp3'\n")
+            for mp3 in voices: f.write(f"file '{mp3}'\n")
         ff(["-f","concat","-safe","0","-i",f"{WORK}/{lang}_vl.txt","-c","copy",f"{WORK}/{lang}_v.mp3"])
         ff(["-i",f"{WORK}/{lang}_v.mp3","-af","apad=pad_dur=0.5","-q:a","4",f"{WORK}/{lang}_vp.mp3"])
         TOTAL=sum(D)

@@ -15,8 +15,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+import bot          # первым: подхватывает локальный .env до чтения переменных в core
 import core
-import bot
 import reel_engine
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
