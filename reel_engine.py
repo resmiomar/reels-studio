@@ -6,7 +6,7 @@ stock_reel.py — авто-агент: тема -> 9:16 Reels из беспла�
 Бренд-слова произносятся по-местному (PHON), написание не меняется.
 env: PEXELS_KEY. Бесплатно. Кредит Pexels — в описании поста.
 """
-import urllib.request, urllib.parse, json, os, subprocess, random
+import urllib.request, urllib.parse, json, os, subprocess, random, time
 
 _HERE=os.path.dirname(os.path.abspath(__file__))
 FONT=os.environ.get("FONT") or os.path.join(_HERE,"assets","Montserrat.ttf")  # вложен в репо: без сети
@@ -98,8 +98,23 @@ def find_clip(q,used):
             cand=sorted(fs,key=lambda f:abs((f["height"] or 0)-1920))
             if cand: used.add(v["id"]); return v["id"],cand[0]["link"]
     return None,None
-def download(u,p):
-    with urllib.request.urlopen(urllib.request.Request(u,headers={"User-Agent":UA}),timeout=90) as r,open(p,"wb") as f: f.write(r.read())
+def download(u,p,tries=3):
+    """Качаем во временный файл с ретраями. Pexels регулярно рвёт соединение на середине
+    (IncompleteRead) — без этого одна оборванная загрузка роняла весь ролик."""
+    last=None
+    for a in range(tries):
+        try:
+            req=urllib.request.Request(u,headers={"User-Agent":UA})
+            with urllib.request.urlopen(req,timeout=120) as r: data=r.read()
+            if len(data)<10000: raise RuntimeError(f"подозрительно мало данных: {len(data)} б")
+            tmp=p+".part"
+            with open(tmp,"wb") as f: f.write(data)
+            os.replace(tmp,p)          # частичный файл никогда не станет "готовым" клипом
+            return True
+        except Exception as e:
+            last=e; print(f"   ! попытка {a+1}/{tries}: {e}",flush=True); time.sleep(2*(a+1))
+    print(f"   ! сцена пропущена: {last}",flush=True)
+    return False
 def dur(p):
     r=subprocess.run(["ffprobe","-v","quiet","-show_entries","format=duration","-of","json",p],capture_output=True,text=True)
     try: return float(json.loads(r.stdout)["format"]["duration"])
@@ -224,19 +239,23 @@ def main():
         if ov and ":" in ov: engine,vid=ov.split(":",1)
         else: engine,vid=random.choice(VOICES[lang])
         print(f"=== {lang}: движок {engine} голос {vid} ===",flush=True)
-        clips=[]; D=[]; spans=[]
+        clips=[]; D=[]; spans=[]; voices=[]
         for i,s in enumerate(SCENES):
             print(f"[{lang} {i}] '{s['q']}'",flush=True)
             cid,link=find_clip(s["q"],used)
             if not link: print("   ! нет клипа"); continue
-            cp=f"{WORK}/{lang}_c{i}.mp4"; download(link,cp)
+            cp=f"{WORK}/{lang}_c{i}.mp4"
+            if not download(link,cp): continue
             mp3=f"{WORK}/{lang}_l{i}.mp3"
             sp=gen_voice(engine,vid,phon(s[lang],lang),cfg["rate"],mp3)
-            clips.append(cp); D.append(dur(mp3)); spans.append(sp)
+            clips.append(cp); D.append(dur(mp3)); spans.append(sp); voices.append(mp3)
             print(f"   clip={cid} {round(D[-1],2)}s",flush=True)
-        N=len(clips); D[-1]+=0.5
+        N=len(clips)
+        if N<2: raise RuntimeError(f"{lang}: собрано сцен {N} — нечего монтировать (нет клипов/сети)")
+        D[-1]+=0.5
+        # список строим по реально скачанным сценам: при пропуске нумерация файлов рвётся
         with open(f"{WORK}/{lang}_vl.txt","w") as f:
-            for i in range(N): f.write(f"file '{WORK}/{lang}_l{i}.mp3'\n")
+            for mp3 in voices: f.write(f"file '{mp3}'\n")
         ff(["-f","concat","-safe","0","-i",f"{WORK}/{lang}_vl.txt","-c","copy",f"{WORK}/{lang}_v.mp3"])
         ff(["-i",f"{WORK}/{lang}_v.mp3","-af","apad=pad_dur=0.5","-q:a","4",f"{WORK}/{lang}_vp.mp3"])
         TOTAL=sum(D)
