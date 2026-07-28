@@ -17,13 +17,19 @@ VOICES = {
     "bala":  "M4jzBCMPD6005WAnM0H9",
 }
 PROJECTS = list(reel_engine.PROJECTS.keys())
+SUFFIX = reel_engine.LANG_CODE          # kk -> KZ, zh -> ZH, ...
+LANG_NAME = reel_engine.LANG_NAME
 
 JOBS = {}   # job_id -> {status, project, langs, files, error, owner}
 _SEM = asyncio.Semaphore(int(os.environ.get("MAX_CONCURRENT", "2")))  # не форк-бомбить ffmpeg
 _RATE = {}  # user_id -> [timestamps за сутки]
 DAILY_QUOTA = int(os.environ.get("DAILY_QUOTA", "15"))
 
-SUFFIX = {"kk": "KZ", "ru": "RU"}
+
+def langs_of(project: str):
+    """Языки, на которых у проекта есть сценарий (порядок — как в LANG_CODE)."""
+    p = reel_engine.PROJECTS.get(project, {})
+    return [l for l in SUFFIX if l in p]
 
 
 def rate_ok(uid: str) -> bool:
@@ -42,8 +48,13 @@ def out_path(job_id: str, project: str, lang: str) -> str:
     return os.path.join(JOBS_DIR, job_id, f"{project}-STOCK-{SUFFIX[lang]}.mp4")
 
 
-def new_job(project: str, langs: str, voice: str, owner: str) -> str:
-    """Регистрирует джоб и запускает его в фоне. Возвращает job_id."""
+def new_job(project: str, langs, voice: str, owner: str) -> str:
+    """Регистрирует джоб и запускает его в фоне. langs — список кодов или "all"."""
+    if langs == "all" or not langs:
+        langs = langs_of(project)
+    if isinstance(langs, str):
+        langs = [langs]
+    langs = [l for l in langs if l in langs_of(project)] or langs_of(project)
     job_id = uuid.uuid4().hex[:12]
     JOBS[job_id] = {"status": "running", "project": project, "langs": langs,
                     "files": {}, "error": "", "ts": time.time(), "owner": owner}
@@ -60,11 +71,11 @@ async def run_job(job_id, project, langs, voice_id):
         "PROJECT": project,
         "OUT_DIR": out_dir,
         "WORK": os.path.join(out_dir, "work"),   # ИЗОЛИРОВАННЫЙ скретч на job (иначе конкурентные джобы затирают друг друга)
+        "LANGS_ONLY": ",".join(langs),
+        # клон-голос только для kk/ru; остальные языки идут на бесплатных Edge-голосах
         "VOICE_KK": f"eleven:{voice_id}",
         "VOICE_RU": f"eleven:{voice_id}",
     })
-    if langs in ("kk", "ru"):
-        env["LANGS_ONLY"] = langs
     try:
         async with _SEM:   # ограничение параллельных генераций
             proc = await asyncio.create_subprocess_exec(
@@ -78,7 +89,7 @@ async def run_job(job_id, project, langs, voice_id):
             job["error"] = log
             return
         files = {}
-        for lang in ("kk", "ru"):
+        for lang in langs:
             if os.path.exists(out_path(job_id, project, lang)):
                 files[lang] = f"/api/file/{job_id}/{lang}"
         job["files"] = files
