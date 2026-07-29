@@ -107,7 +107,10 @@ async def _deliver(chat_id: int, job_id: str, project: str):
     for lang in job.get("langs") or []:
         p = core.out_path(job_id, project, lang)
         if os.path.exists(p):
-            await send_video(chat_id, p, f"{FLAG.get(lang,'')} {core.LANG_NAME[lang]} · {project}")
+            # подпись НА РУССКОМ: владелец не знает этих языков, по самому видео
+            # он рынок не определит и ролики перепутает
+            await send_video(chat_id, p,
+                             f"{FLAG.get(lang,'')} {reel_engine.MARKET.get(lang, lang)}")
             sent += 1
     await tg("sendMessage", chat_id=chat_id,
              text=f"✅ Готово, роликов: {sent}. Ещё одно: /start")
