@@ -116,9 +116,28 @@ async def _deliver(chat_id: int, job_id: str, project: str):
              text=f"✅ Готово, роликов: {sent}. Ещё одно: /start")
 
 
+CHATS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "known_chats.json")
+
+
+def _remember(chat_id):
+    """Запоминаем, кому можно писать: Telegram не даёт боту начать диалог первым,
+    а polling съедает апдейты, поэтому getUpdates задним числом уже ничего не покажет."""
+    try:
+        ids = json.load(open(CHATS_FILE)) if os.path.exists(CHATS_FILE) else []
+    except Exception:
+        ids = []
+    if chat_id not in ids:
+        ids.append(chat_id)
+        json.dump(ids, open(CHATS_FILE, "w"))
+
+
 async def handle_update(u: dict):
     msg = u.get("message") or {}
     cq = u.get("callback_query") or {}
+    for src in (msg, cq.get("message") or {}):
+        cid = (src.get("chat") or {}).get("id")
+        if cid:
+            _remember(cid)
 
     if msg.get("text", "").startswith("/start") or msg.get("text", "").startswith("/new"):
         await tg("sendMessage", chat_id=msg["chat"]["id"],
