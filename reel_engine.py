@@ -137,7 +137,12 @@ LANG_NAME={"kk":"Қазақша","ru":"Русский","zh":"中文","de":"Deuts
 # ===== РЕЖИМ ГОДОВОГО ПЛАНА =====
 # SOURCE=year WEEK=1 SLOT=A -> берём готовый 30-секундный сценарий из ~/ibook-video/videos_<lang>.json
 # (5 кадров с таймингами 0-4/4-11/11-19/19-26/26-30, озвучка 62-76 слов) и рендерим его стоком.
-YEAR_DIR=os.environ.get("YEAR_DIR",os.path.expanduser("~/ibook-video"))
+# Сценарии ищем сначала рядом с кодом - так они уезжают на сервер вместе с ним.
+# Первый серверный прогон собрал ноль роликов именно потому, что папка со
+# сценариями осталась на Mac владельца.
+_SC=os.path.join(_HERE,"scenarii")
+YEAR_DIR=os.environ.get("YEAR_DIR", _SC if os.path.isdir(_SC)
+                        else os.path.expanduser("~/ibook-video"))
 SOURCE=os.environ.get("SOURCE","")
 WEEK=int(os.environ.get("WEEK","1")); SLOT=os.environ.get("SLOT","A")
 NUM=(WEEK-1)*3+{"A":1,"B":2,"C":3}.get(SLOT,1)   # сквозной номер: 1..156

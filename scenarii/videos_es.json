@@ -1,0 +1,80 @@
+[
+ {
+  "week": 1,
+  "slot": "A",
+  "aud": "master",
+  "title": "Январь: пустой салон (мастер, ES)",
+  "hook": "Enero: sillón vacío, alquiler ya",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Empty barber and beauty chair in a bright modern studio, cool winter light through the window, a young European stylist standing alone with arms crossed looking at the door, slow dolly-in, quiet worried mood, no text, no logos",
+    "screen": "Sin citas en la agenda"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of the stylist checking a blank week in her phone calendar, then looking at an envelope on the counter, handheld camera drifting slightly, soft grey daylight, tense tired expression, no text, no logos",
+    "screen": "El alquiler no espera"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "A young woman on her sofa scrolling a beauty booking app, swiping through stylist portfolios and tapping a free time slot, camera pushes over her shoulder, warm lamp light, curious happy face, no text, no logos",
+    "screen": "Ella busca cita en el móvil"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The stylist smiling while she photographs her finished nail and hair work and builds her online profile on her phone, gimbal arc around the workstation, clean bright studio, motivated confident energy, no text, no logos",
+    "screen": "Crea tu perfil en ibook"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Busy studio with clients waiting, the stylist working while new booking alerts light up her phone on the counter, camera pulls back smoothly, warm golden light, relaxed proud smile, no text, no logos",
+    "screen": "30 días gratis, sin tarjeta"
+   }
+  ],
+  "vo": "Enero. El sillón vacío, el teléfono mudo, y el alquiler no espera. Mientras tanto tu clienta está con el móvil buscando cita, y reserva con quien encuentra. Pues que te encuentre a ti: crea tu perfil en ibook, sube tus trabajos, tus precios y tus reseñas, y que te reserven las veinticuatro horas. Treinta días gratis, y lo cancelas cuando quieras.",
+  "cta": "Descarga ibook ya",
+  "caption": "Después de las fiestas la agenda se queda en blanco, le pasa a todo el mundo. Pero las clientas siguen buscando, solo que ahora lo hacen desde el móvil. Con ibook tienes tu perfil con trabajos, precios y reseñas, y te reservan a cualquier hora. Treinta días gratis y cancelas cuando quieras.",
+  "tags": "#peluqueria #esteticista #centrodebelleza #citasonline #agendaonline #manicurista #barberia #autonomos #negociodebelleza #eneroflojo #ibook",
+  "music": "Сдержанное грустное вступление, дальше бодрый лёгкий латино-поп"
+ },
+ {
+  "week": 31,
+  "slot": "A",
+  "aud": "master",
+  "title": "Испания: vuelta al cole без звонков",
+  "hook": "Ya llega la vuelta al cole",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Bright modern Spanish salon at the end of August, European stylist cutting a boy's hair while her mobile keeps ringing on the shelf, she looks overwhelmed, slow handheld push in, warm daylight, no text, no logos",
+    "screen": "Vuelta al cole en el salón"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Waiting bench full of European parents and children with backpacks, stylist trying to answer the phone with scissors still in her hand, wide shot, natural window light, chaotic but real mood, no text, no logos",
+    "screen": "Todos la misma semana"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "European mother on a sunny street putting her phone away after nobody picked up, shrugging and entering a different salon nearby, tracking shot behind her, bright afternoon sun, no text, no logos",
+    "screen": "Llamada perdida, cliente perdido"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Vertical close up of hands holding a phone at a kitchen table, scrolling a clean appointment calendar and choosing a free morning slot, soft evening light, calm satisfied face out of focus, no text, no logos",
+    "screen": "Reservan solos, 24 horas"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Smiling European stylist in a tidy salon checking a full organized schedule on her phone, child laughing in the chair, mother nodding, slow orbit, warm golden light, proud relaxed mood, no text, no logos",
+    "screen": "ibook: 30 días gratis"
+   }
+  ],
+  "vo": "Se acerca la vuelta al cole y tu agenda se llena de golpe. Todos los padres quieren cortarle el pelo al niño la misma semana, y el teléfono suena mientras tienes las manos ocupadas. Una llamada perdida y esa familia se va a otra peluquería. Adelántate: activa la reserva online con ibook. Los padres reservan solos, a cualquier hora, sin llamarte. Treinta días gratis, cancelas cuando quieras.",
+  "cta": "30 días gratis",
+  "caption": "La vuelta al cole llena la agenda en pocos días y el teléfono no para justo cuando estás trabajando. Con ibook los padres reservan solos a cualquier hora desde tu enlace personal, con agenda sin citas duplicadas y recordatorios automáticos. Sin comisiones y con treinta días gratis y cancelando cuando quieras.",
+  "tags": "#peluqueria #salondebelleza #vueltaalcole #reservaonline #citaprevia #barberia #cortedepelo #agendaonline #autonomos #peluqueriainfantil #ibook",
+  "music": "Бодрый латино-поп, ритм нарастает, финал мягкий и уверенный"
+ }
+]

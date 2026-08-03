@@ -1,0 +1,80 @@
+[
+ {
+  "week": 1,
+  "slot": "A",
+  "aud": "master",
+  "title": "Январь: пустое кресло (мастер, FR)",
+  "hook": "Janvier: fauteuil vide, loyer dû",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Empty salon chair in a bright modern studio, soft winter light through a large window, a young European hairstylist alone by the mirror checking her silent phone, slow push-in, quiet gloomy mood, no text, no logos",
+    "screen": "Aucun rendez-vous"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close shot of the stylist tidying already spotless brushes and towels to keep busy, empty appointment book beside her, handheld camera slowly drifting, cool diffused daylight, discouraged expression, no text, no logos",
+    "screen": "Le loyer tombe quand même"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Cut to a woman at home scrolling a beauty booking app on her smartphone, comparing stylist photos and prices, thumb tapping a slot, camera moves over her shoulder, warm evening lamp light, engaged face, no text, no logos",
+    "screen": "Elle réserve sur son téléphone"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Back in the studio, the stylist photographs her finished work and sets up her online profile on her phone, smooth gimbal orbit around her, clean bright modern interior, determined hopeful smile, no text, no logos",
+    "screen": "Crée ton profil sur ibook"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Full salon with waiting clients, the stylist working confidently while booking notifications appear on her phone nearby, camera pulls back steadily, warm golden light, calm satisfied smile, no text, no logos",
+    "screen": "30 jours gratuits, sans carte"
+   }
+  ],
+  "vo": "Janvier. Le fauteuil est vide, le téléphone ne sonne pas, mais le loyer, lui, tombe quand même. Pendant ce temps, ta cliente cherche un rendez-vous sur son téléphone et elle réserve chez celle qu'elle trouve. Alors fais-toi trouver: crée ton profil sur ibook, mets tes réalisations, tes tarifs, tes avis, et on te réserve vingt-quatre heures sur vingt-quatre. Trente jours gratuits, tu arrêtes quand tu veux.",
+  "cta": "Télécharge ibook",
+  "caption": "Après les fêtes, l'agenda se vide, on connaît toutes ça. Sauf que les clientes, elles, continuent de chercher, sur leur téléphone. Avec ibook tu as ton profil avec tes réalisations, tes tarifs et tes avis, et on te réserve même la nuit. Trente jours gratuits, tu arrêtes quand tu veux.",
+  "tags": "#coiffeuse #esthéticienne #institutdebeauté #barbier #onglerie #prisederendezvous #agendaenligne #indépendante #salondecoiffure #beautybusiness #ibook",
+  "music": "Тихое задумчивое начало, затем светлый ритмичный поп"
+ },
+ {
+  "week": 31,
+  "slot": "A",
+  "aud": "master",
+  "title": "Франция: la rentrée, записи идут сами",
+  "hook": "Fin août: ton planning explose",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Bright Parisian style salon in late August, European hairdresser cutting a young boy's hair while her phone vibrates nonstop on the shelf, tired expression, slow handheld dolly in, soft daylight, no text, no logos",
+    "screen": "Fin août au salon"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Wide shot of a busy light salon, European parents and school children waiting on chairs, two stylists working fast, a phone ringing unanswered, natural window light, energetic overwhelmed atmosphere, no text, no logos",
+    "screen": "Tous la même semaine"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close medium shot of a European father hanging up after nobody answered, frowning, then walking toward another salon entrance, camera pans with him, warm late afternoon street light, no text, no logos",
+    "screen": "Appel manqué, client perdu"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Vertical close up of a smartphone held in the evening at home, a finger selecting a free time slot in a clean booking calendar, warm lamp glow, quiet relief on the parent's face, subtle push in, no text, no logos",
+    "screen": "Ils réservent seuls, 24h/24"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Calm European hairdresser in a bright tidy salon finishing a child's cut and smiling at the parent, neat calendar visible on a tablet, slow rising camera, warm cinematic light, serene confident mood, no text, no logos",
+    "screen": "ibook: 30 jours gratuits"
+   }
+  ],
+  "vo": "Fin août, la rentrée arrive et ton planning explose. Tous les parents veulent la coupe de leur enfant la même semaine, et le téléphone sonne pendant que tu as les mains prises. Un appel manqué, et la famille file chez le salon d'à côté. Prends de l'avance: active la réservation en ligne avec ibook. Les parents réservent seuls, à toute heure, sans appeler. Trente jours gratuits, tu arrêtes quand tu veux.",
+  "cta": "30 jours gratuits",
+  "caption": "La rentrée remplit ton planning en quelques jours et le téléphone sonne toujours au mauvais moment. Avec ibook, les parents réservent seuls à toute heure depuis ton lien personnel, avec un agenda sans double réservation et des rappels automatiques. Zéro commission et trente jours gratuits, résiliables quand tu veux.",
+  "tags": "#coiffeur #salondecoiffure #larentree #reservationenligne #prisederendezvous #barbier #coupeenfant #agenda #autoentrepreneur #coiffureenfant #ibook",
+  "music": "Спокойный французский поп с лёгким битом, к финалу светлый и тёплый"
+ }
+]

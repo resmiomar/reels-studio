@@ -1,0 +1,80 @@
+[
+ {
+  "week": 1,
+  "slot": "A",
+  "aud": "master",
+  "title": "Январь: пустое кресло (мастер, DE)",
+  "hook": "Januar: Stuhl leer, Miete fällig.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Empty styling chair in a bright modern salon, cold morning light through tall windows, a hairdresser stands alone at the mirror staring at her silent phone, slow dolly-in, quiet melancholy mood, no text, no logos",
+    "screen": "Januar: leerer Stuhl"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close shot of the same young European stylist wiping a clean workstation she has not used today, folded towels untouched, handheld camera drifting slowly sideways, soft grey daylight, tired resigned expression, no text, no logos",
+    "screen": "Die Miete wartet nicht"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Cut to a woman on a sofa at home scrolling a booking app on her smartphone, thumb tapping a stylist profile, camera pushes over her shoulder, warm cozy lamp light, focused curious face, no text, no logos",
+    "screen": "Sie sucht online einen Termin"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Back in the salon, the stylist smiles and sets up her profile on her phone, photographing her own hair work on the counter, smooth gimbal arc around her, clean bright studio light, hopeful energy, no text, no logos",
+    "screen": "Profil anlegen, gefunden werden"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Busy salon a few weeks later, the stylist greeting a happy client at the chair, phone with notifications on the counter, camera pulls back steadily, warm golden light, confident satisfied smile, no text, no logos",
+    "screen": "30 Tage gratis, ohne Karte"
+   }
+  ],
+  "vo": "Januar. Der Stuhl bleibt leer, das Telefon klingelt nicht, aber die Miete zahlt sich nicht von allein. Und deine Kundin? Die sitzt längst am Handy und sucht einen Termin. Gebucht wird bei dem, den sie findet. Also mach dich sichtbar: Profil in ibook anlegen, Arbeiten, Preise, Bewertungen rein, und du bist rund um die Uhr buchbar. Dreißig Tage kostenlos, jederzeit kündbar.",
+  "cta": "Jetzt ibook laden",
+  "caption": "Nach den Feiertagen wird es ruhig, das kennt jede im Beauty-Business. Deine Kundin sucht trotzdem weiter, nur eben im Handy. Leg dein Profil in ibook an, zeig deine Arbeiten und Preise und lass dich rund um die Uhr buchen. 30 Tage kostenlos testen, jederzeit kündbar.",
+  "tags": "#friseur #friseurin #kosmetikerin #beautysalon #onlinetermin #terminbuchung #selbststaendig #salonalltag #beautybusiness #januarflaute #ibook",
+  "music": "Спокойное меланхоличное начало, со второй половины светлый оптимистичный бит"
+ },
+ {
+  "week": 31,
+  "slot": "A",
+  "aud": "master",
+  "title": "Германия: Schulanfang, лавина записей",
+  "hook": "Ende August: das Telefon glüht",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Busy bright salon, European hairdresser blow-drying a boy's haircut while her phone buzzes on the counter, slight stress in her eyes, handheld camera slowly pushing in, warm late summer daylight, no text, no logos",
+    "screen": "Ende August im Salon"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Crowded waiting area of a modern light salon, European parents with school age children sitting on the bench, stylist glancing nervously at the queue, wide static shot, soft window light, mild tension, no text, no logos",
+    "screen": "Alle wollen denselben Termin"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close shot of a mother outside on the street lowering her phone after an unanswered call, disappointed, then walking toward another salon door, camera follows at shoulder height, soft afternoon light, no text, no logos",
+    "screen": "Anruf verpasst, Kunde weg"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Vertical close up of a smartphone in a parent's hands at home in the evening, finger tapping a clean booking calendar and picking a free slot, cozy lamp light, calm relief, slow tilt down, no text, no logos",
+    "screen": "Eltern buchen selbst, 24/7"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Relaxed European hairdresser finishing a child's haircut and smiling at the mother, tidy modern salon, tablet with a neat schedule on the counter, camera slowly orbits, golden warm light, confident mood, no text, no logos",
+    "screen": "ibook: 30 Tage kostenlos"
+   }
+  ],
+  "vo": "Ende August wird es voll. Alle Eltern wollen ihr Kind noch vor dem Schulanfang zum Friseur bringen, und dein Telefon steht keine Minute still. Du föhnst, das Handy klingelt, ein Anruf geht verloren, und die Familie geht zum Salon nebenan. Mach es dir leichter: Aktiviere deine Online-Terminbuchung bei ibook. Eltern buchen selbst, rund um die Uhr, ohne Anruf. Dreißig Tage kostenlos, jederzeit kündbar.",
+  "cta": "Jetzt 30 Tage gratis testen",
+  "caption": "Ende August wollen alle Eltern denselben Termin, und du kommst kaum ans Telefon. Lass sie einfach selbst online buchen, Tag und Nacht, ohne dass du den Föhn aus der Hand legst. In ibook bekommst du deinen eigenen Buchungslink, einen Kalender ohne Doppelbuchung und automatische Erinnerungen. 30 Tage kostenlos, jederzeit kündbar.",
+  "tags": "#friseur #friseursalon #schulanfang #onlinetermin #terminbuchung #barbershop #kinderhaarschnitt #salonalltag #selbststaendig #beautybusiness #ibook",
+  "music": "Лёгкий поп с нарастающим ритмом, к финалу спокойный и уверенный"
+ }
+]
