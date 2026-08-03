@@ -73,6 +73,11 @@ jobs:
       - name: Собрать ролики
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          # Ключи надо ПЕРЕДАТЬ шагу, а не просто положить в секреты: без этого
+          # сток отвечал «401 Unauthorized», хотя ключ в репозитории был.
+          PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
+          EL_KEY: ${{ secrets.EL_KEY }}
           YAZYK: ${{ github.event.inputs.yazyk || 'kk' }}
           NEDELI: ${{ github.event.inputs.nedeli || '31 32 33 34 35' }}
         run: python server_sborka.py
