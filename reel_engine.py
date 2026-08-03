@@ -6,7 +6,7 @@ stock_reel.py — авто-агент: тема -> 9:16 Reels из беспла�
 Бренд-слова произносятся по-местному (PHON), написание не меняется.
 env: PEXELS_KEY. Бесплатно. Кредит Pexels — в описании поста.
 """
-import urllib.request, urllib.parse, json, os, subprocess, random, time, re, shutil, glob
+import urllib.request, urllib.parse, json, os, sys, subprocess, random, time, re, shutil, glob
 
 _HERE=os.path.dirname(os.path.abspath(__file__))
 FONT=os.environ.get("FONT") or os.path.join(_HERE,"assets","Montserrat.ttf")  # вложен в репо: без сети
@@ -587,7 +587,10 @@ def main():
             # мультиязычной базе нет вовсе, а здесь они читают по-настоящему,
             # своей фонетикой. Считает почти мгновенно - секунды против десяти минут.
             # vid = "<файл модели>:<номер диктора>", номер необязателен.
-            py=os.environ.get("UK_PY",os.path.expanduser("~/uk-tts/.venv/bin/python"))
+            # На сервере голос стоит в системном python, отдельного venv там нет.
+            # Без этой проверки сорок роликов упали с «нет такого файла».
+            _v=os.path.expanduser("~/uk-tts/.venv/bin/python")
+            py=os.environ.get("UK_PY", _v if os.path.exists(_v) else sys.executable)
             name,_,spk=vid.partition(":")
             mdl=os.path.expanduser(f"~/uk-tts/{name}.onnx")
             if not os.path.exists(mdl): raise RuntimeError(f"нет голоса: {mdl}")
