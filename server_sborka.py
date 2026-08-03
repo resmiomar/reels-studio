@@ -25,7 +25,10 @@ import os, sys, glob, json, subprocess, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-YAZYK = os.environ.get("YAZYK", "kk")
+# По расписанию язык не задан - берём по дню недели, чтобы за неделю прошли все.
+PO_DNYAM = {0: "kk", 1: "ru", 2: "uk", 3: "zh", 4: "en", 5: "de", 6: "fr"}
+import datetime
+YAZYK = os.environ.get("YAZYK") or PO_DNYAM[datetime.datetime.utcnow().weekday()]
 NEDELI = os.environ.get("NEDELI", "31 32 33 34 35").split()
 OUT = os.path.join(HERE, "out")
 ASSETS = os.path.join(HERE, "assets")
