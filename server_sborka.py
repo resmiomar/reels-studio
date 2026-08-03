@@ -62,6 +62,16 @@ def sobrat(week, slot):
                KADRY=os.path.join(ASSETS, "kadry"),
                KLIPY=os.path.join(ASSETS, "klipoteka"),
                GOLOS=papka_golosa())
+    # На сервере нет тяжёлой локальной модели голоса (9 ГБ) - её туда не затащить.
+    # Русский идёт на ElevenLabs: владелец выбрал этот голос из трёх, и это
+    # обычный запрос по сети, серверу он по силам.
+    if YAZYK in ("ru", "rf"):
+        env["VOICE_" + YAZYK.upper()] = "eleven:xKWShjEXraJurmIX5TZM"
+    # Языки, которым нужна только локальная тяжёлая модель, на сервере не берём:
+    # лучше честно пропустить, чем собрать пятнадцать пустых роликов.
+    if YAZYK in ("uz", "tr", "it") and not os.path.isdir(os.path.expanduser("~/uz-tts")):
+        print(f"  {week}{slot}: язык {YAZYK} на сервере не собирается, нужен Mac", flush=True)
+        return False
     r = subprocess.run([sys.executable, os.path.join(HERE, "reel_engine.py")],
                        env=env, capture_output=True, text=True)
     line = [l for l in r.stdout.splitlines() if "DONE" in l or "ERR" in l]
