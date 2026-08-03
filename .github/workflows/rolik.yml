@@ -1,0 +1,62 @@
+# Сборка роликов ibook на сервере GitHub. Бесплатно: 2000 минут в месяц, а один
+# ролик собирается около трёх минут - это больше шестисот роликов. Компьютер
+# владельца при этом может быть выключен.
+#
+# Кадры и клипы в репозиторий НЕ кладём: склад весит 2.7 ГБ, столько репозиторий
+# не держит. Они лежат в релизе - там бесплатно и до 2 ГБ на файл.
+name: Ролики ibook
+
+on:
+  workflow_dispatch:
+    inputs:
+      yazyk:
+        description: "язык: kk uk zh en de es fr ru uz tr it rf"
+        default: "kk"
+      nedeli:
+        description: "недели через пробел, например 31 32 33"
+        default: "31 32 33 34 35"
+  schedule:
+    - cron: "0 2 * * *"
+
+jobs:
+  sobrat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Поставить ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Поставить голос и зависимости
+        run: pip install -q piper-tts requests onnxruntime unicode-rbnf sentence-stream
+
+      # Голоса и склад тянем из релиза: репозиторий их не выдержит, а в релизе
+      # они лежат бесплатно и качаются за минуту.
+      - name: Забрать голоса и склад
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p assets
+          gh release download sklad -D assets --clobber || echo "релиза ещё нет"
+          ls -la assets || true
+
+      - name: Собрать ролики
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          YAZYK: ${{ github.event.inputs.yazyk || 'kk' }}
+          NEDELI: ${{ github.event.inputs.nedeli || '31 32 33 34 35' }}
+        run: python server_sborka.py
+
+      - name: Сохранить готовое
+        uses: actions/upload-artifact@v4
+        with:
+          name: roliki
+          path: out/*.mp4
+          retention-days: 7
