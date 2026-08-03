@@ -12,10 +12,26 @@ import os, sys, json, glob, re, time
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import bot as B          # подтягивает .env и BOT_TOKEN
 import reel_engine as R
 
-API = f"https://api.telegram.org/bot{B.BOT_TOKEN}"
+
+def _token():
+    """Токен бота: сперва из окружения, потом из .env, и только в крайнем случае
+    из bot.py. Раньше здесь был прямой импорт bot.py - он тянет за собой веб-часть
+    с fastapi, которой на сервере нет, и отправка падала при готовых роликах."""
+    t = os.environ.get("BOT_TOKEN") or os.environ.get("TG_TOKEN")
+    if t:
+        return t
+    env = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if os.path.exists(env):
+        for line in open(env, encoding="utf-8"):
+            if line.startswith("BOT_TOKEN="):
+                return line.split("=", 1)[1].strip().strip('"\'')
+    import bot as B
+    return B.BOT_TOKEN
+
+
+API = f"https://api.telegram.org/bot{_token()}"
 CODE2LANG = {v: k for k, v in R.LANG_CODE.items()}   # KZ -> kk
 
 
