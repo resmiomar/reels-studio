@@ -1,16 +1,10 @@
-# venv / python
 .venv/
 __pycache__/
 *.pyc
-*.pyo
-
-# секреты
 .env
-*.key
-
-# рантайм-выход (генерируемые видео/логи)
+known_chats.json
+kanaly.json
+graphify-out/
+bot.log
 jobs/
-*.log
-
-# временное
-.DS_Store
+assets/Montserrat.ttf

@@ -1,0 +1,51 @@
+{
+ "_комментарий": "Финальный призыв в озвучке. pro = мастер и салон (они платят), client = клиент (ему приложение бесплатно). Правится руками, код трогать не нужно.",
+ "ru": {
+  "pro": "Скачай ibook и открой запись. Ссылка в профиле, есть в App Store и Google Play.",
+  "client": "Найди своего мастера в ibook и запишись. Ссылка в профиле, есть в App Store и Google Play."
+ },
+ "rf": {
+  "pro": "Скачай ibook и открой запись. Ссылка в профиле, есть в App Store и Google Play.",
+  "client": "Найди своего мастера в ibook и запишись. Ссылка в профиле, есть в App Store и Google Play."
+ },
+ "kk": {
+  "pro": "ibook қосымшасын жүктеп ал да, жазылуды аш. Сілтеме профильде, App Store мен Google Play-де бар.",
+  "client": "ibook арқылы өз шеберіңді тауып жазыл. Сілтеме профильде, App Store мен Google Play-де бар."
+ },
+ "uk": {
+  "pro": "Завантаж ibook і відкрий онлайн-запис. Посилання в профілі, є в App Store і Google Play.",
+  "client": "Знайди свого майстра в ibook і запишись. Посилання в профілі, є в App Store і Google Play."
+ },
+ "uz": {
+  "pro": "ibook ilovasini yuklab ol va onlayn yozilishni yoq. Havola profilda, App Store va Google Play-da bor.",
+  "client": "ibook orqali oʻz ustangni top va yozil. Havola profilda, App Store va Google Play-da bor."
+ },
+ "tr": {
+  "pro": "ibook'u indir ve online randevunu aç. Bağlantı profilde, App Store ve Google Play'de.",
+  "client": "ibook'ta kendi uzmanını bul ve randevu al. Bağlantı profilde, App Store ve Google Play'de."
+ },
+ "en": {
+  "pro": "Download ibook and open your online booking. Link in bio, on the App Store and Google Play.",
+  "client": "Find your pro on ibook and book in seconds. Link in bio, on the App Store and Google Play."
+ },
+ "zh": {
+  "pro": "下载 ibook，开通在线预约。链接在主页，App Store 和 Google Play 都有。",
+  "client": "打开 ibook，找到你的技师直接预约。链接在主页，App Store 和 Google Play 都有。"
+ },
+ "de": {
+  "pro": "Lade ibook und aktiviere deine Online-Buchung. Link im Profil, im App Store und bei Google Play.",
+  "client": "Finde deinen Profi in ibook und buche direkt. Link im Profil, im App Store und bei Google Play."
+ },
+ "it": {
+  "pro": "Scarica ibook e attiva le prenotazioni online. Link nel profilo, su App Store e Google Play.",
+  "client": "Trova il tuo professionista su ibook e prenota. Link nel profilo, su App Store e Google Play."
+ },
+ "es": {
+  "pro": "Descarga ibook y activa tu reserva online. Enlace en el perfil, en App Store y Google Play.",
+  "client": "Encuentra a tu profesional en ibook y reserva. Enlace en el perfil, en App Store y Google Play."
+ },
+ "fr": {
+  "pro": "Télécharge ibook et active ta réservation en ligne. Lien dans le profil, sur App Store et Google Play.",
+  "client": "Trouve ton pro sur ibook et réserve en deux clics. Lien dans le profil, sur App Store et Google Play."
+ }
+}
