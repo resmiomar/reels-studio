@@ -29,7 +29,11 @@ sys.path.insert(0, HERE)
 PO_DNYAM = {0: "kk", 1: "ru", 2: "uk", 3: "zh", 4: "en", 5: "de", 6: "fr"}
 import datetime
 YAZYK = os.environ.get("YAZYK") or PO_DNYAM[datetime.datetime.utcnow().weekday()]
-NEDELI = os.environ.get("NEDELI", "31 32 33 34 35").split()
+# «god» - весь год, от текущего месяца и по кругу: сначала то, что можно
+# публиковать сегодня, а не январь в августе.
+_N = os.environ.get("NEDELI", "31 32 33 34 35").strip()
+NEDELI = ([str(w) for w in list(range(31, 53)) + list(range(1, 31))]
+          if _N in ("god", "год", "all") else _N.split())
 OUT = os.path.join(HERE, "out")
 ASSETS = os.path.join(HERE, "assets")
 
@@ -93,10 +97,21 @@ def main():
     raspakovat()
     print(f"язык {YAZYK}, недели {' '.join(NEDELI)}", flush=True)
     n = 0
+    # Прогон ограничен шестью часами. Ролик собирается три-четыре минуты, значит
+    # за раз влезает около сотни. Останавливаемся заранее и досылаем что успели,
+    # иначе GitHub оборвёт на середине и пропадёт всё.
+    import time as _t
+    start = _t.time()
     for w in NEDELI:
         for s in ("A", "B", "C"):
+            if _t.time() - start > 5.2 * 3600:
+                print(f"близко к пределу времени, останавливаюсь на {w}{s}", flush=True)
+                break
             if sobrat(w, s):
                 n += 1
+        else:
+            continue
+        break
     print(f"собрано роликов: {n}")
     # Отправляем сразу из сервера: тогда владельцу вообще ничего делать не надо.
     if os.environ.get("TG_TOKEN"):

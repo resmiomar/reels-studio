@@ -13,7 +13,7 @@ on:
         description: "язык: kk uk zh en de es fr ru uz tr it rf"
         default: "kk"
       nedeli:
-        description: "недели через пробел, например 31 32 33"
+        description: "недели через пробел, или god - весь год"
         default: "31 32 33 34 35"
   schedule:
     # Каждую ночь свой язык - так за неделю проходит весь список, и от меня
@@ -29,7 +29,7 @@ on:
 jobs:
   sobrat:
     runs-on: ubuntu-latest
-    timeout-minutes: 340
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
