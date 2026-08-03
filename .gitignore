@@ -3,7 +3,6 @@ __pycache__/
 *.pyc
 .env
 known_chats.json
-kanaly.json
 graphify-out/
 bot.log
 jobs/
