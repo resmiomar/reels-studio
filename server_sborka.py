@@ -52,7 +52,13 @@ def sobrat(week, slot):
     r = subprocess.run([sys.executable, os.path.join(HERE, "reel_engine.py")],
                        env=env, capture_output=True, text=True)
     line = [l for l in r.stdout.splitlines() if "DONE" in l or "ERR" in l]
-    print(f"  {week}{slot}: {line[0] if line else r.stdout[-160:]}", flush=True)
+    if line:
+        print(f"  {week}{slot}: {line[0]}", flush=True)
+    else:
+        # Первые серверные прогоны молчали: ошибка уходила в stderr, а я его не
+        # печатал и видел пустоту. Теперь показываем оба потока.
+        print(f"  {week}{slot}: НЕ СОБРАЛСЯ\n     stdout: {r.stdout[-300:]}\n"
+              f"     stderr: {r.stderr[-500:]}", flush=True)
     return bool(line and "DONE" in line[0])
 
 
