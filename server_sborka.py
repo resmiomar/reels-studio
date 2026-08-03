@@ -41,6 +41,19 @@ def raspakovat():
             subprocess.run(["tar", "xzf", z, "-C", ASSETS], check=False)
 
 
+def papka_golosa():
+    """Где лежит готовая озвучка этого языка.
+
+    Архив распаковывается под своим именем («golos-kk-eleven»), а не под тем,
+    что ждал код («golos-kk»). Из-за этого движок не находил готовые дорожки
+    и лез синтезировать голос, которого на сервере нет. Ищем по началу имени.
+    """
+    for d in sorted(glob.glob(os.path.join(ASSETS, f"golos-{YAZYK}*"))):
+        if os.path.isdir(d):
+            return d
+    return os.path.join(ASSETS, f"golos-{YAZYK}")
+
+
 def sobrat(week, slot):
     env = dict(os.environ)
     env.update(PROJECT="ibook", SOURCE="year", WEEK=str(week), SLOT=slot,
@@ -48,7 +61,7 @@ def sobrat(week, slot):
                OUT_DIR=OUT, WORK=os.path.join(OUT, "w"),
                KADRY=os.path.join(ASSETS, "kadry"),
                KLIPY=os.path.join(ASSETS, "klipoteka"),
-               GOLOS=os.path.join(ASSETS, f"golos-{YAZYK}"))
+               GOLOS=papka_golosa())
     r = subprocess.run([sys.executable, os.path.join(HERE, "reel_engine.py")],
                        env=env, capture_output=True, text=True)
     line = [l for l in r.stdout.splitlines() if "DONE" in l or "ERR" in l]

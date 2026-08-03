@@ -47,6 +47,29 @@ jobs:
           gh release download sklad -D assets --clobber || echo "релиза ещё нет"
           ls -la assets || true
 
+      # Голоса Piper нужны языкам без готовой озвучки. Качаются с открытого
+      # склада, весят мегабайты, ставятся за секунды.
+      - name: Забрать голоса Piper
+        run: |
+          mkdir -p "$HOME/uk-tts"
+          B=https://huggingface.co/rhasspy/piper-voices/resolve/main
+          case "${{ github.event.inputs.yazyk || 'kk' }}" in
+            kk) P=kk/kk_KZ/issai/high/kk_KZ-issai-high ;;
+            uk) P=uk/uk_UA/tetiana/high/uk_UA-tetiana-high ;;
+            zh) P=zh/zh_CN/chaowen/medium/zh_CN-chaowen-medium ;;
+            en) P=en/en_US/libritts/high/en_US-libritts-high ;;
+            de) P=de/de_DE/thorsten/high/de_DE-thorsten-high ;;
+            fr) P=fr/fr_FR/siwis/medium/fr_FR-siwis-medium ;;
+            es) P=es/es_MX/claude/high/es_MX-claude-high ;;
+            *)  P="" ;;
+          esac
+          if [ -n "$P" ]; then
+            N=$(basename "$P")
+            curl -sL -o "$HOME/uk-tts/$N.onnx" "$B/$P.onnx"
+            curl -sL -o "$HOME/uk-tts/$N.onnx.json" "$B/$P.onnx.json"
+            ls -la "$HOME/uk-tts"
+          fi
+
       - name: Собрать ролики
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
