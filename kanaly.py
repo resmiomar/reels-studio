@@ -47,6 +47,28 @@ def karta():
     return json.load(open(KARTA, encoding="utf-8")) if os.path.exists(KARTA) else {}
 
 
+# Что уже ушло в каналы. Без этого списка ночной запуск каждую неделю собирал
+# те же августовские ролики заново и слал их повторно: в канале дубли, а у
+# русского вдобавок впустую сгорала платная озвучка.
+UCHET = os.path.join(HERE, "otpravleno.json")
+
+
+def uchet():
+    try:
+        return json.load(open(UCHET, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def zapisat(lang, nom):
+    d = uchet()
+    lst = d.setdefault(lang, [])
+    if nom not in lst:
+        lst.append(nom)
+        lst.sort()
+        json.dump(d, open(UCHET, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+
+
 def opredelit(nazv):
     """Язык канала по его названию. Казахстанский русскоязычный проверяем первым,
     иначе слово «казах» в названии увело бы его в казахский канал."""
@@ -137,6 +159,9 @@ def cmd_shli(papka):
         chat = po_yazyku.get(lang)
         if not chat:
             print(f"  {imya}: нет канала для «{lang}», пропускаю"); continue
+        # Уже отправляли - второй раз не шлём. Дубли в канале хуже, чем пропуск.
+        if not tolko and nom in uchet().get(lang, []):
+            print(f"  {imya}: уже в канале, пропускаю"); continue
         card = None
         try:
             os.environ.update(SOURCE="year", WEEK=str((nom - 1) // 3 + 1),
@@ -150,6 +175,7 @@ def cmd_shli(papka):
         text = f"🗓 {mes} · ролик {vmes}\n\n{zag}\n\n{opis}"
         try:
             SB.send_file(chat, f, text, "document")
+            zapisat(lang, nom)
             print(f"  {imya} -> {k[chat]['nazvanie']}", flush=True)
             # Пауза между файлами. Telegram считает не только сообщения, но и
             # объём: без передышки канал упирается в лимит уже на десятом ролике.

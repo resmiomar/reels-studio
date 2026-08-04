@@ -6,7 +6,7 @@ stock_reel.py — авто-агент: тема -> 9:16 Reels из беспла�
 Бренд-слова произносятся по-местному (PHON), написание не меняется.
 env: PEXELS_KEY. Бесплатно. Кредит Pexels — в описании поста.
 """
-import urllib.request, urllib.parse, json, os, sys, subprocess, random, time, re, shutil, glob
+import urllib.request, urllib.parse, urllib.error, json, os, sys, subprocess, random, time, re, shutil, glob
 
 _HERE=os.path.dirname(os.path.abspath(__file__))
 FONT=os.environ.get("FONT") or os.path.join(_HERE,"assets","Montserrat.ttf")  # вложен в репо: без сети
@@ -348,7 +348,16 @@ _only=[x.strip() for x in os.environ.get("LANGS_ONLY","").split(",") if x.strip(
 if _only: LANGS={l:LANGS[l] for l in _only if l in LANGS}
 
 def api(u):
-    return json.load(urllib.request.urlopen(urllib.request.Request(u,headers={"Authorization":KEY,"User-Agent":UA}),timeout=20))
+    # Сток отвечает 429 «слишком часто», когда параллельных сборок много.
+    # Одна такая ошибка роняла ролик целиком: девять прогонов разом потеряли
+    # двадцать один. Ждём и повторяем - минута ожидания дешевле пересборки.
+    for popytka in range(4):
+        try:
+            return json.load(urllib.request.urlopen(
+                urllib.request.Request(u,headers={"Authorization":KEY,"User-Agent":UA}),timeout=20))
+        except urllib.error.HTTPError as e:
+            if e.code not in (429,500,502,503,504) or popytka==3: raise
+            time.sleep(15*(popytka+1))
 # ПАМЯТЬ ИСПОЛЬЗОВАННЫХ КЛИПОВ МЕЖДУ ЗАПУСКАМИ.
 # Каждый ролик рендерится отдельным процессом, поэтому множество used обнулялось,
 # и на один и тот же запрос сток отдавал ТОТ ЖЕ первый клип. Из 8 роликов выходило

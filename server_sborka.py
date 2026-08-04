@@ -61,7 +61,30 @@ def papka_golosa():
     return os.path.join(ASSETS, f"golos-{YAZYK}")
 
 
+def nomer(week, slot):
+    """Сквозной номер ролика: неделя 31, слот A - это ролик 91."""
+    return (int(week) - 1) * 3 + "ABC".index(slot) + 1
+
+
+def uzhe_otpravlen(week, slot):
+    """Проверка ДО сборки, а не после отправки.
+
+    Ночной запуск каждую неделю брал одни и те же августовские недели и
+    собирал их заново. Для казахского это просто потерянное время, а для
+    русского - сгоревшая платная озвучка: пятнадцать роликов съели квоту,
+    хотя они уже лежали в канале.
+    """
+    try:
+        return nomer(week, slot) in json.load(
+            open(os.path.join(HERE, "otpravleno.json"), encoding="utf-8")).get(YAZYK, [])
+    except Exception:
+        return False
+
+
 def sobrat(week, slot):
+    if uzhe_otpravlen(week, slot):
+        print(f"  {week}{slot}: ролик {nomer(week, slot)} уже в канале, не собираю", flush=True)
+        return False
     env = dict(os.environ)
     env.update(PROJECT="ibook", SOURCE="year", WEEK=str(week), SLOT=slot,
                LANGS_ONLY=YAZYK, KOROTKO="1",
