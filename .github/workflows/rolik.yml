@@ -13,15 +13,23 @@ on:
         description: "язык: kk uk zh en de es fr ru uz tr it rf"
         default: "kk"
       nedeli:
-        description: "недели через пробел, например 31 32 33"
+        description: "недели через пробел, или god - весь год"
         default: "31 32 33 34 35"
   schedule:
-    - cron: "0 2 * * *"
+    # Пока работаем только на двух языках: владелец сказал сначала принять
+    # казахский и русский, остальные девять ждут его слова. Раньше здесь
+    # стояло семь ночей подряд, и каждая слала в канал то, чего он не смотрел.
+    - cron: "0 1 * * 1"     # понедельник - казахский
+    - cron: "0 1 * * 2"     # вторник - русский для Казахстана
 
 jobs:
   sobrat:
     runs-on: ubuntu-latest
-    timeout-minutes: 340
+    timeout-minutes: 350
+    # Право на запись нужно, чтобы вернуть в репозиторий список отправленного:
+    # без него следующий запуск снова не знает, что уже в канале.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +43,7 @@ jobs:
           python-version: "3.12"
 
       - name: Поставить голос и зависимости
-        run: pip install -q piper-tts requests onnxruntime unicode-rbnf sentence-stream
+        run: pip install -q piper-tts requests httpx pillow onnxruntime unicode-rbnf sentence-stream
 
       # Голоса и склад тянем из релиза: репозиторий их не выдержит, а в релизе
       # они лежат бесплатно и качаются за минуту.
@@ -47,12 +55,61 @@ jobs:
           gh release download sklad -D assets --clobber || echo "релиза ещё нет"
           ls -la assets || true
 
+      # Голоса Piper нужны языкам без готовой озвучки. Качаются с открытого
+      # склада, весят мегабайты, ставятся за секунды.
+      - name: Забрать голоса Piper
+        run: |
+          mkdir -p "$HOME/uk-tts"
+          B=https://huggingface.co/rhasspy/piper-voices/resolve/main
+          case "${{ github.event.inputs.yazyk || 'kk' }}" in
+            kk) P=kk/kk_KZ/issai/high/kk_KZ-issai-high ;;
+            uk) P=uk/uk_UA/tetiana/high/uk_UA-tetiana-high ;;
+            zh) P=zh/zh_CN/chaowen/medium/zh_CN-chaowen-medium ;;
+            en) P=en/en_US/libritts/high/en_US-libritts-high ;;
+            de) P=de/de_DE/thorsten/high/de_DE-thorsten-high ;;
+            fr) P=fr/fr_FR/siwis/medium/fr_FR-siwis-medium ;;
+            es) P=es/es_MX/claude/high/es_MX-claude-high ;;
+            *)  P="" ;;
+          esac
+          if [ -n "$P" ]; then
+            N=$(basename "$P")
+            curl -sL -o "$HOME/uk-tts/$N.onnx" "$B/$P.onnx"
+            curl -sL -o "$HOME/uk-tts/$N.onnx.json" "$B/$P.onnx.json"
+            ls -la "$HOME/uk-tts"
+          fi
+
       - name: Собрать ролики
         env:
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
-          YAZYK: ${{ github.event.inputs.yazyk || 'kk' }}
-          NEDELI: ${{ github.event.inputs.nedeli || '31 32 33 34 35' }}
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          # Ключи надо ПЕРЕДАТЬ шагу, а не просто положить в секреты: без этого
+          # сток отвечал «401 Unauthorized», хотя ключ в репозитории был.
+          PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
+          EL_KEY: ${{ secrets.EL_KEY }}
+          # При запуске по расписанию язык выбирается по дню недели.
+          YAZYK: ${{ github.event.inputs.yazyk || '' }}
+          # По расписанию берём ВЕСЬ год: список отправленного не даст собрать
+          # то, что уже в канале, значит запуск сам доделывает недостающее.
+          # Раньше тут стояли жёстко недели августа - и ночь за ночью сервер
+          # пересобирал одни и те же пятнадцать роликов.
+          NEDELI: ${{ github.event.inputs.nedeli || 'god' }}
         run: python server_sborka.py
+
+      # Список отправленного возвращаем в репозиторий. Прогоны идут параллельно,
+      # поэтому перед push подтягиваем чужие изменения и пробуем ещё раз.
+      - name: Запомнить, что ушло в каналы
+        if: always()
+        run: |
+          git config user.name "ibook-bot"
+          git config user.email "bot@ibook.digital"
+          git add otpravleno.json || exit 0
+          git diff --cached --quiet && echo "нового нет" && exit 0
+          git commit -q -m "Отправлено в каналы: ${{ github.event.inputs.yazyk || 'по расписанию' }}"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -q origin main && git push -q origin HEAD:main && echo "записано" && exit 0
+            sleep $((i * 7))
+          done
+          echo "не удалось записать список - следующий запуск может продублировать"
 
       - name: Сохранить готовое
         uses: actions/upload-artifact@v4
