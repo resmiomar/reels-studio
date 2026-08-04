@@ -22,8 +22,10 @@ import send_batch as SB
 KARTA = os.path.join(HERE, "kanaly.json")
 # По какому слову в названии канала понимаем язык. Два казахстанских канала
 # различаем по слову «рус» - там ролики на русском для Казахстана.
+# Порядок важен: «ibook.kz ( ru )» должен попасть в русский раньше, чем
+# сработает признак «kz» и уведёт его в казахский канал.
 PRIZNAK = [
-    ("ru", ("казах рус", "kz рус", "рус каз", "russian kz", "казахстан рус")),
+    ("ru", ("kz ( ru", "kz(ru", "kz ru", "казах рус", "рус каз", "kazakhstan ru")),
     ("kk", ("қазақ", "казах", "kazakh", "kz")),
     ("rf", ("россия", "russia", "рф")),
     ("uk", ("украин", "ukrain")),
@@ -56,12 +58,18 @@ def opredelit(nazv):
 
 
 def cmd_naydi():
-    d = SB.api("getUpdates", limit=100, timeout=0)
+    d = SB.api("getUpdates", limit=100, timeout=0,
+               allowed_updates=json.dumps(["my_chat_member","chat_member",
+                                           "channel_post","message"]))
     k = karta()
     novyh = 0
     for u in d.get("result", []):
         for key in ("my_chat_member", "channel_post", "message"):
-            c = (u.get(key) or {}).get("chat")
+            v = u.get(key) or {}
+            c = v.get("chat")
+            f = v.get("forward_from_chat") or (v.get("forward_origin") or {}).get("chat")
+            if f and f.get("type") == "channel":
+                c = f
             if not c or c.get("type") not in ("channel", "supergroup", "group"):
                 continue
             lang = opredelit(c.get("title"))
@@ -109,6 +117,13 @@ def cmd_shli(papka):
         if v.get("lang"):
             po_yazyku.setdefault(v["lang"], i)
     files = sorted(glob.glob(os.path.join(papka, "*.mp4")))
+    # ТОЛЬКО - досылка. Когда часть роликов не дошла из-за лимита Telegram,
+    # незачем слать заново весь год: в канале появятся дубли. Список номеров
+    # через пробел: TOLKO="004 005 006".
+    tolko = set((os.environ.get("TOLKO") or "").split())
+    if tolko:
+        files = [f for f in files if os.path.basename(f)[:3] in tolko]
+        print(f"досылаю только: {len(files)} из списка в {len(tolko)} номеров")
     print(f"роликов: {len(files)}")
     for f in files:
         imya = os.path.basename(f)
@@ -136,6 +151,9 @@ def cmd_shli(papka):
         try:
             SB.send_file(chat, f, text, "document")
             print(f"  {imya} -> {k[chat]['nazvanie']}", flush=True)
+            # Пауза между файлами. Telegram считает не только сообщения, но и
+            # объём: без передышки канал упирается в лимит уже на десятом ролике.
+            import time; time.sleep(3)
         except Exception as e:
             print(f"  {imya}: не ушло — {str(e)[:90]}", flush=True)
 
