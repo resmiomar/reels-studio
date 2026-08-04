@@ -117,6 +117,13 @@ def cmd_shli(papka):
         if v.get("lang"):
             po_yazyku.setdefault(v["lang"], i)
     files = sorted(glob.glob(os.path.join(papka, "*.mp4")))
+    # ТОЛЬКО - досылка. Когда часть роликов не дошла из-за лимита Telegram,
+    # незачем слать заново весь год: в канале появятся дубли. Список номеров
+    # через пробел: TOLKO="004 005 006".
+    tolko = set((os.environ.get("TOLKO") or "").split())
+    if tolko:
+        files = [f for f in files if os.path.basename(f)[:3] in tolko]
+        print(f"досылаю только: {len(files)} из списка в {len(tolko)} номеров")
     print(f"роликов: {len(files)}")
     for f in files:
         imya = os.path.basename(f)
@@ -144,6 +151,9 @@ def cmd_shli(papka):
         try:
             SB.send_file(chat, f, text, "document")
             print(f"  {imya} -> {k[chat]['nazvanie']}", flush=True)
+            # Пауза между файлами. Telegram считает не только сообщения, но и
+            # объём: без передышки канал упирается в лимит уже на десятом ролике.
+            import time; time.sleep(3)
         except Exception as e:
             print(f"  {imya}: не ушло — {str(e)[:90]}", flush=True)
 

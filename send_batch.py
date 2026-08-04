@@ -9,7 +9,7 @@ Chat id берём из первого входящего апдейта (вла
 /start у бота: Telegram не даёт боту писать первым).
 """
 import os, sys, json, glob, re, time
-import urllib.request
+import urllib.request, urllib.error
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import reel_engine as R
@@ -74,7 +74,32 @@ def send_file(chat_id, path, caption, kind="video", **extra):
              + open(path, "rb").read() + b"\r\n--" + b + b"--\r\n")
     req = urllib.request.Request(f"{API}/{meth}", data=body,
                                  headers={"Content-Type": f"multipart/form-data; boundary={b.decode()}"})
-    return json.load(urllib.request.urlopen(req, timeout=300))
+    return _poslat(req, os.path.basename(path))
+
+
+def _poslat(req, imya=""):
+    """Отправка с уважением к лимиту Telegram.
+
+    Девять прогонов слали ролики в один канал одновременно, Telegram ответил
+    429 «слишком часто» - и два десятка готовых роликов просто пропали: код
+    считал 429 обычной ошибкой и шёл дальше. Теперь ждём столько, сколько
+    Telegram сам просит в retry_after, и повторяем. Пятая неудача - сдаёмся.
+    """
+    for popytka in range(5):
+        try:
+            return json.load(urllib.request.urlopen(req, timeout=600))
+        except urllib.error.HTTPError as e:
+            if e.code not in (429, 500, 502, 503, 504):
+                raise
+            pauza = 5 * (popytka + 1)
+            if e.code == 429:
+                try:
+                    pauza = int(json.load(e).get("parameters", {}).get("retry_after", pauza)) + 2
+                except Exception:
+                    pass
+            print(f"    {imya}: Telegram просит подождать {pauza} сек", flush=True)
+            time.sleep(pauza)
+    raise RuntimeError(f"{imya}: не удалось отправить за пять попыток")
 
 
 def send_video(chat_id, path, caption):

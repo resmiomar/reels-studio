@@ -1,0 +1,50 @@
+# Досылка роликов, которые собрались, но не дошли до канала.
+#
+# Что случилось. Девять прогонов слали файлы в один канал одновременно, и
+# Telegram ответил 429 «слишком часто». Код тогда считал это обычной ошибкой,
+# шёл дальше - и двадцать девять готовых роликов остались лежать в артефактах.
+#
+# Здесь мы их забираем обратно с сервера и досылаем по одному, с паузой.
+# Пересобирать ничего не надо: ролики уже готовы.
+name: Досылка ibook
+
+on:
+  workflow_dispatch:
+    inputs:
+      progony:
+        description: "номера прогонов через пробел, откуда брать готовые ролики"
+        default: "30832145614 30832139966 30832134805 30832129031 30832122271 30832115952 30832110555 30832105289 30832099719 30877174890"
+      nomera:
+        description: "какие ролики досылать, номера через пробел"
+        default: "004 005 006 007 022 023 024 025 030 040 041 042 048 087 088 089 090 106 111 112 113 130 131 138 139 148 149 150 156"
+
+jobs:
+  doslat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Поставить зависимости
+        run: pip install -q requests httpx pillow
+
+      - name: Забрать готовые ролики из прошлых прогонов
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p out
+          for id in ${{ github.event.inputs.progony }}; do
+            gh run download "$id" -n roliki -D out 2>&1 | tail -1 || echo "прогон $id недоступен"
+          done
+          echo "роликов забрано: $(ls out/*.mp4 2>/dev/null | wc -l)"
+
+      - name: Досылать
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          TOLKO: ${{ github.event.inputs.nomera }}
+        run: python -c "import kanaly; kanaly.cmd_shli('out')"
