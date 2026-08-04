@@ -22,6 +22,12 @@ jobs:
   doslat:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    # Без этого разрешения gh отвечает «403 Resource not accessible»: обычный
+    # токен прогона умеет читать код, но не чужие артефакты. Первая досылка
+    # из-за этого молча скачала ноль роликов и отправила ноль.
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v4
 
