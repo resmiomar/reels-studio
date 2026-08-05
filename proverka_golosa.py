@@ -126,6 +126,47 @@ def vysota(x, sr):
     return np.array(f0), np.array(energiya)
 
 
+def shum(x, sr):
+    """Сколько в записи лишнего шума.
+
+    Владелец услышал в английском голосе шипение, которого я не померил, и был
+    прав. Хуже того: мой прежний замер живости шум ПООЩРЯЛ. Высоту голоса я
+    беру по автокорреляции, а на шумной записи она скачет как попало, и этот
+    скачок засчитывался как «живая интонация». Поэтому голос с шипением вышел
+    на первое место. Теперь шум меряем отдельно и живость без него не смотрим.
+
+    ЧИСТОТА    насколько звук периодичен. Голос - это повторяющиеся колебания
+               связок, шум не повторяется. Единица - чистый тон, ноль - шипение.
+    ФОН        насколько громко шипит В ПАУЗАХ, когда голос молчит. Именно это
+               и слышно как «грязная запись».
+    """
+    import numpy as np
+    kadr, shag = int(0.04 * sr), int(0.01 * sr)
+    lo, hi = int(sr / 400), int(sr / 70)
+    piki, en = [], []
+    for i in range(0, len(x) - kadr, shag):
+        k = x[i:i + kadr]
+        en.append(float(np.sqrt(np.mean(k ** 2))))
+        if en[-1] < 0.01:
+            continue
+        k = k - k.mean()
+        a = np.correlate(k, k, "full")[kadr - 1:]
+        if a[0] <= 0:
+            continue
+        seg = (a / a[0])[lo:hi]
+        if len(seg):
+            piki.append(float(np.max(seg)))
+    en = np.array(en)
+    if not len(piki) or not len(en):
+        return 0.0, 0.0
+    # Фон: тихие кадры против громких, в децибелах. Чем ближе к нулю, тем
+    # сильнее слышно шипение между словами.
+    tihie = np.percentile(en, 10)
+    gromkie = np.percentile(en, 95)
+    fon = 20 * math.log10(max(tihie, 1e-7) / max(gromkie, 1e-7))
+    return float(np.mean(piki)), fon
+
+
 def mera(path, znakov):
     import numpy as np
     x, sr = chitat(path)
@@ -133,6 +174,7 @@ def mera(path, znakov):
     f0, en = vysota(x, sr)
     if len(f0) < 20:
         return None
+    chistota, fon = shum(x, sr)
     # Разброс высоты в полутонах: язык не важен, ухо слышит именно это.
     med = float(np.median(f0))
     polutona = 12 * np.log2(np.clip(f0, 1e-6, None) / med)
@@ -150,7 +192,8 @@ def mera(path, znakov):
     gromkost = float(np.std(20 * np.log10(np.clip(en, 1e-6, None))))
     return {"длит": round(dlit, 1), "размах": round(razmah, 2),
             "пауз": len(pauzy), "пауза_ср": round(sum(pauzy) / len(pauzy), 2) if pauzy else 0,
-            "темп": round(znakov / dlit, 1), "громкость": round(gromkost, 1)}
+            "темп": round(znakov / dlit, 1), "громкость": round(gromkost, 1),
+            "чистота": round(chistota, 3), "фон": round(fon, 1)}
 
 
 def main():
@@ -174,7 +217,11 @@ def main():
             if m:
                 itog[imya] = m
 
-    for lang in ("ru", "kk", "uk", "zh", "en", "de", "fr", "es"):
+    # Сравниваем не только «свой» голос языка, но и запасные того же языка:
+    # владелец услышал шипение в английском, значит выбирать надо из нескольких.
+    zapas = [x.strip() for x in os.environ.get("ZAPAS", "").split(",") if x.strip()]
+    yazyki = [x.strip() for x in os.environ.get("YAZYKI", "ru,kk,uk,zh,en,de,fr,es").split(",")]
+    for lang in yazyki:
         w = os.path.join(RABOTA, f"{lang}.wav")
         r = sintez(lang, w)
         if not r:
@@ -182,14 +229,31 @@ def main():
             continue
         m = mera(w, len(r[1]))
         if m:
-            itog[f"{NAZVANIE[lang]}"] = m
-        print(f"  {NAZVANIE[lang]}: готово", flush=True)
+            itog[f"{NAZVANIE.get(lang, lang)}"] = m
+        print(f"  {NAZVANIE.get(lang, lang)}: готово", flush=True)
+
+    for g in zapas:
+        lang = g[:2] if g[:2] in NAZVANIE else "en"
+        GOLOS["_"] = g
+        NAZVANIE["_"] = g
+        w = os.path.join(RABOTA, g + ".wav")
+        staryy = GOLOS.get(lang)
+        GOLOS[lang] = g
+        r = sintez(lang, w)
+        GOLOS[lang] = staryy
+        if not r:
+            print(f"  {g}: не синтезировался", flush=True)
+            continue
+        m = mera(w, len(r[1]))
+        if m:
+            itog[g] = m
+        print(f"  {g}: готово", flush=True)
 
     print()
-    zag = f"{'голос':32} {'размах':>7} {'пауз':>5} {'темп':>6} {'громк':>6}"
+    zag = f"{'голос':30} {'чистота':>8} {'фон дБ':>7} {'размах':>7} {'темп':>6}"
     print(zag); print("-" * len(zag))
     for k, v in itog.items():
-        print(f"{k:32} {v['размах']:>7} {v['пауз']:>5} {v['темп']:>6} {v['громкость']:>6}")
+        print(f"{k:30} {v['чистота']:>8} {v['фон']:>7} {v['размах']:>7} {v['темп']:>6}")
     json.dump(itog, open(os.path.join(RABOTA, "itog.json"), "w"),
               ensure_ascii=False, indent=1)
 
