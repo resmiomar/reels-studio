@@ -65,7 +65,7 @@ jobs:
             kk) P=kk/kk_KZ/issai/high/kk_KZ-issai-high ;;
             uk) P=uk/uk_UA/tetiana/high/uk_UA-tetiana-high ;;
             zh) P=zh/zh_CN/chaowen/medium/zh_CN-chaowen-medium ;;
-            en) P=en/en_US/libritts/high/en_US-libritts-high ;;
+            en) P=en/en_US/lessac/high/en_US-lessac-high ;;
             de) P=de/de_DE/thorsten/high/de_DE-thorsten-high ;;
             fr) P=fr/fr_FR/siwis/medium/fr_FR-siwis-medium ;;
             es) P=es/es_MX/claude/high/es_MX-claude-high ;;
