@@ -61,10 +61,17 @@ LOUD=os.environ.get("LOUD","acompressor=threshold=-18dB:ratio=2.5:attack=10:rele
 _T7="/Volumes/T7/ibook/work"
 _DEF=_T7 if os.path.isdir("/Volumes/T7/ibook") else "/tmp/stock_reel_v4"
 WORK=os.environ.get("WORK",_DEF); os.makedirs(WORK,exist_ok=True)
-MUSIC=os.environ.get("MUSIC","")  # свой mp3; если пусто — берём bundled reel_music.mp3 рядом; иначе генерим
+MUSIC=os.environ.get("MUSIC","")  # свой файл; если пусто — берём лежащий рядом; иначе генерим
 if not MUSIC:
-    _b=os.path.join(os.path.dirname(os.path.abspath(__file__)),"reel_music.mp3")
-    if os.path.exists(_b): MUSIC=_b
+    # Старый reel_music.mp3 закодирован на 32 кбит/с. На таком битрейте mp3 сам
+    # начинает шипеть и булькать на верхах, и это слышно как «старый телевизор»
+    # именно в паузах, где музыка выходит из-под голоса. Рядом лежит та же
+    # мелодия, но собранная из чистых синусоид в 48 кГц: артефактов нет по
+    # построению, прав ни у кого нет. Старый файл оставляем как запасной.
+    _d=os.path.dirname(os.path.abspath(__file__))
+    for _n in ("reel_music_chistaya.m4a","reel_music.mp3"):
+        _b=os.path.join(_d,_n)
+        if os.path.exists(_b): MUSIC=_b; break
 
 # Произношение брендов: только для ОЗВУЧКИ, написание на экране не трогаем.
 # Бренд НИКОГДА не читается по-английски ("eye-book"). В каждом языке своя запись,
