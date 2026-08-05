@@ -1,0 +1,143 @@
+# Подбор ХАРАКТЕРА голоса, а не выбор голоса.
+#
+# Владелец послушал женский немецкий и сказал верное: «очень спокойно, подними
+# звук, поставь харизму». Он прав, и это моя недоработка - я взял у движка
+# настройки по умолчанию, а они рассчитаны на ровное чтение, не на рекламу.
+#
+# У Chatterbox характер задают две ручки:
+#
+#   ЭМОЦИЯ (exaggeration)  насколько сильно голос играет. 0.5 - обычная речь,
+#                          выше - ярче, но на слишком большой цифре речь
+#                          начинает съезжать и глотать слоги.
+#   НАПОР (cfg_weight)     насколько жёстко держаться образца. Чем НИЖЕ, тем
+#                          свободнее и живее интонация, но тем дальше от
+#                          голоса-образца.
+#
+# Плюс сам образец: движок копирует не только тембр, но и манеру. С вялого
+# образца харизмы не выйдет ни при каких ручках.
+#
+# Перебираем сочетания, меряем живость и шлём владельцу лучшие. Один синтез на
+# сервере занимает около трёх минут, шесть штук - двадцать минут.
+name: Настройка характера голоса
+
+on:
+  workflow_dispatch:
+    inputs:
+      yazyk:
+        description: "код языка"
+        default: "de"
+      obrazec:
+        description: "образец голоса: zhenskiy или zhenskiy_energiya"
+        default: "zhenskiy"
+      emocii:
+        description: "эмоция, через пробел"
+        default: "0.5 0.9 1.3"
+      napor:
+        description: "напор, через пробел"
+        default: "0.5 0.3"
+      tekst:
+        description: "что сказать"
+        default: "Der Sommer ist vorbei und plötzlich wollen alle in dieser Woche einen Termin. In ibook buchen deine Kundinnen selbst, Tag und Nacht. 30 Tage kostenlos."
+
+jobs:
+  nastroyka:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Поставить ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Поставить движок
+        run: |
+          python -m pip install -q --upgrade pip
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -q chatterbox-tts || pip install -q "git+https://github.com/resemble-ai/chatterbox.git"
+
+      - name: Перебрать сочетания
+        env:
+          TEKST: ${{ github.event.inputs.tekst }}
+          YAZYK: ${{ github.event.inputs.yazyk }}
+          OBRAZEC: ${{ github.event.inputs.obrazec }}
+          EMOCII: ${{ github.event.inputs.emocii }}
+          NAPOR: ${{ github.event.inputs.napor }}
+        run: |
+          mkdir -p out
+          python - <<'PY'
+          import os, time, itertools, torch, torchaudio
+          from chatterbox.mtl_tts import ChatterboxMultilingualTTS as M
+
+          tekst = os.environ["TEKST"]; lang = os.environ["YAZYK"]
+          obrazec = f"obrazcy_golosa/{os.environ['OBRAZEC']}.wav"
+          emocii = [float(x) for x in os.environ["EMOCII"].split()]
+          napory = [float(x) for x in os.environ["NAPOR"].split()]
+
+          t0 = time.time()
+          m = M.from_pretrained(device="cpu")
+          print(f"модель загружена за {time.time()-t0:.0f} сек", flush=True)
+
+          for e, n in itertools.product(emocii, napory):
+              t = time.time()
+              try:
+                  wav = m.generate(tekst, language_id=lang, audio_prompt_path=obrazec,
+                                   exaggeration=e, cfg_weight=n)
+                  imya = f"out/e{e}_n{n}.wav".replace("0.", "")
+                  torchaudio.save(imya, wav, m.sr)
+                  print(f"эмоция {e} напор {n}: готово за {time.time()-t:.0f} сек", flush=True)
+              except Exception as ex:
+                  print(f"эмоция {e} напор {n}: не вышло, {str(ex)[:150]}", flush=True)
+          PY
+          ls -la out/ || true
+
+      - name: Померить и прислать лучшие
+        if: always()
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          OWNER_CHAT: "8067164700"
+        run: |
+          for F in out/*.wav; do
+            [ -f "$F" ] || continue
+            # Та же чистка, что и везде: иначе сравнение будет нечестным.
+            ffmpeg -y -v quiet -i "$F" \
+              -af "highpass=f=70,afftdn=nf=-35:nr=20,agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3" \
+              -ar 22050 -ac 1 "${F%.wav}_c.wav"
+          done
+          pip install -q numpy
+          python - <<'PY'
+          import os, sys, glob, subprocess
+          sys.path.insert(0, ".")
+          import proverka_golosa as P
+          import send_batch as SB
+
+          itog = []
+          for f in sorted(glob.glob("out/*_c.wav")):
+              w = f.replace(".wav", "_16.wav")
+              subprocess.run(["ffmpeg","-y","-v","quiet","-i",f,"-ar","16000","-ac","1",w],check=False)
+              m = P.mera(w, 151)
+              if m:
+                  itog.append((m["размах"], m["чистота"], f))
+                  print(f"{os.path.basename(f):20} живость {m['размах']:.2f}  чистота {m['чистота']:.3f}", flush=True)
+          itog.sort(reverse=True)
+          print("\nэталоны: робот 2.66 | платный одобренный 4.19", flush=True)
+          chat = int(os.environ.get("OWNER_CHAT", "0"))
+          # Шлём три самых живых: слушать шесть штук владельцу незачем.
+          for zh, ch, f in itog[:3]:
+              SB.send_file(chat, f, f"Харизма {zh:.2f} (платный эталон 4.19), чистота {ch:.3f}", "audio")
+              print("отправлено", f, flush=True)
+          PY
+
+      - name: Сохранить
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nastroyka
+          path: out/*.wav
+          retention-days: 7
