@@ -55,6 +55,8 @@ jobs:
             pip install -q chatterbox-tts || pip install -q chatterbox-multilingual || \
               pip install -q "git+https://github.com/resemble-ai/chatterbox.git"
           else
+            pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+            pip install -q soundfile
             pip install -q qwen-tts || pip install -q "git+https://github.com/QwenLM/Qwen3-TTS.git"
           fi
           pip list 2>/dev/null | grep -iE "chatterbox|qwen|torch" || true
