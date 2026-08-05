@@ -69,11 +69,17 @@ jobs:
         run: |
           git config user.name "ibook-bot"
           git config user.email "bot@ibook.digital"
-          git add otpravleno.json || exit 0
-          git diff --cached --quiet && echo "нового нет" && exit 0
-          git commit -q -m "Отправлено в каналы: русский, недели ${{ matrix.chast }}"
+          # Три потока русского пишут в один файл. Складываем, а не затираем:
+          # на английском такая гонка стоила ста пяти записей в учёте.
+          cp otpravleno.json moe.json
           for i in 1 2 3 4 5; do
-            git pull --rebase -q origin main && git push -q origin HEAD:main && echo "записано" && exit 0
+            git fetch -q origin main
+            git checkout -q -B zapis origin/main
+            python uchet.py slit moe.json
+            git add otpravleno.json
+            git diff --cached --quiet && echo "нового нет" && exit 0
+            git commit -q -m "Отправлено в каналы: русский, недели ${{ matrix.chast }}"
+            git push -q origin zapis:main && echo "записано" && exit 0
             sleep $((i * 7))
           done
           echo "не удалось записать список - следующий запуск может продублировать"
