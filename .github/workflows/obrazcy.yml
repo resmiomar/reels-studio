@@ -99,6 +99,10 @@ jobs:
           n = 0
           for d in sorted(glob.glob("out/*/")):
               golos = os.path.basename(d.rstrip("/"))
+              # Рабочие папки «w-...» пропускаем. В них лежат куски сцен, и в
+              # прошлый раз владелец получил три образца и пятнадцать обрывков.
+              if golos.startswith("w-"):
+                  continue
               for f in sorted(glob.glob(d + "*.mp4")):
                   SB.send_file(chat, f, f"Образец голоса: {golos}", "document")
                   print("отправлен", golos, os.path.basename(f), flush=True)
