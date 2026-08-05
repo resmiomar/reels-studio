@@ -47,9 +47,12 @@ REELS_ENC=["-c:v","libx264","-pix_fmt","yuv420p","-profile:v","high","-level","4
 # Закрытие ворот 70 мс не случайно: пауза между фразами длится две-три десятых
 # секунды, и с закрытием в четверть секунды ворота просто не успевают.
 #
+# Сила шумодава 20, а не 40: замер показал тот же результат до десятой доли,
+# а чем слабее давим, тем меньше риск смазать согласные и получить
+# «подводную» речь. Лишнего давления в звуке быть не должно.
 # Замерено на образце: шум в паузе минус 47 дБ против минус 25 у старой
 # цепочки, при этом чистота и живость голоса не упали, а выросли.
-CHISTKA=os.environ.get("CHISTKA","highpass=f=70,afftdn=nf=-35:nr=40,"
+CHISTKA=os.environ.get("CHISTKA","highpass=f=70,afftdn=nf=-35:nr=20,"
                        "agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3")
 # ГРОМКОСТЬ - уже на смесь голоса с музыкой. Ни шумодава, ни ворот тут быть не
 # должно: они бы глушили музыку в паузах, и она начала бы дёргаться.
@@ -122,6 +125,10 @@ _FORCE=os.environ.get("ENGINE","")
 # Турецкому и итальянскому чистого носителя не нашлось: единственные модели
 # либо запрещают коммерцию, либо молчат о лицензии. Они остаются на Chatterbox -
 # там лицензия MIT и всё чисто, ценой лёгкого акцента.
+# Как язык называется у Qwen: он ждёт слово, а не код.
+QWEN_YAZYK={"de":"German","ru":"Russian","rf":"Russian","zh":"Chinese","en":"English",
+            "fr":"French","es":"Spanish","it":"Italian","ja":"Japanese","ko":"Korean",
+            "pt":"Portuguese"}
 NATIVE={
  "kk":[f"kk_KZ-issai-high:{n}" for n in (0,1,3,4)],
  "uk":["uk_UA-tetiana-high","uk_UA-mykyta-high"],
@@ -136,10 +143,16 @@ NATIVE={
  "fr":["fr_FR-siwis-medium"],
  "es":["es_MX-claude-high"],
 }
+# Языки, которые говорит Qwen. У Piper немецкого женского нормального нет
+# вовсе: либо 16 кГц и глухо, либо начитка книг ровным тоном, и владелец
+# забраковал их все. Qwen дал чистоту 0.744 - выше и Piper, и платного голоса.
+QWEN_GOLOS={"de":["Vivian"]}
 VOICES={}
 for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     if _FORCE=="eleven":
         VOICES[_l]=[("eleven",LAURA),("eleven",BALA)]
+    elif _l in QWEN_GOLOS and _FORCE not in ("chatterbox","piper"):
+        VOICES[_l]=[("qwen",v) for v in QWEN_GOLOS[_l]]
     elif _l in NATIVE and _FORCE!="chatterbox":
         VOICES[_l]=[("piper",v) for v in NATIVE[_l]]
     else:
@@ -660,14 +673,44 @@ def main():
             r=subprocess.run(cmd,input=text,capture_output=True,text=True)
             if not os.path.exists(wav):
                 raise RuntimeError(f"piper не отдал звук: {(r.stdout+r.stderr)[-300:]}")
-            # Обработка только звуковая: свист на «с» вниз, верх чуть вверх,
-            # динамику поджать и вывести на громкость ленты.
+            # ЗДЕСЬ рождалось то шипение, которое владелец услышал в паузах.
+            # Прежняя обработка сначала поднимала верх на 2.5 дБ (а шум живёт
+            # ровно там), потом добавляла 5 дБ сжатием и ещё 4 громкостью. Итого
+            # девять децибел поверх шума, и всё это ДО того, как я его чистил.
+            # Теперь порядок правильный: сперва убрать шум, потом равнять
+            # громкость, и без запаса - итоговый уровень всё равно задаёт микс.
             ff(["-i",wav,"-ar","44100",
-                "-af","deesser=i=0.4:m=0.5:f=0.5,highshelf=g=2.5:f=5500,"
-                      "acompressor=threshold=-24dB:ratio=5:attack=5:release=120:makeup=5,"
-                      "loudnorm=I=-10:TP=-1.0:LRA=6,volume=4dB,"
-                      "alimiter=limit=0.85:level=disabled",
+                "-af",CHISTKA+",deesser=i=0.4:m=0.5:f=0.5,loudnorm=I=-16:TP=-2.0:LRA=9",
                 "-q:a","2",mp3])
+            return [None,None]
+        if engine=="qwen":
+            # Qwen3-TTS (Apache 2.0, Alibaba). Голос задаётся СЛОВАМИ, а не
+            # образцом: пишем, каким тоном говорить, и модель так и говорит.
+            # Владелец забраковал все остальные бесплатные немецкие: «робот, как
+            # наркоман». У этого чистота 0.744 против 0.610 у ближайшего и 0.599
+            # у платного - именно она отвечает за «не мямлит».
+            #
+            # Модель грузится 25 секунд, поэтому держим её в памяти между
+            # роликами: иначе на ста пятидесяти шести роликах это лишний час.
+            import torch, soundfile as _sf
+            global _QWEN
+            try: _QWEN
+            except NameError: _QWEN=None
+            if _QWEN is None:
+                from qwen_tts import Qwen3TTSModel
+                _QWEN=Qwen3TTSModel.from_pretrained(
+                    os.environ.get("QWEN_MODEL","Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice"),
+                    device_map="cpu",dtype=torch.float32)
+            # Тон под рекламу: ровное чтение в ленте не работает, владелец
+            # прямо просил «подними звук, поставь харизму».
+            ton=os.environ.get("QWEN_TON",
+                "speak in a warm, energetic and charismatic female voice, "
+                "like a friendly advertisement, with lively intonation and clear articulation")
+            wavs,sr=_QWEN.generate_custom_voice(
+                text=text,language=QWEN_YAZYK.get(lang,"German"),
+                speaker=vid or os.environ.get("QWEN_DIKTOR","Vivian"),instruct=ton)
+            wv=mp3+".wav"; _sf.write(wv,wavs[0],sr)
+            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-16:TP=-2.0:LRA=9","-q:a","2",mp3])
             return [None,None]
         if engine=="chatterbox":
             # Узбекский: локальная модель (MIT), бесплатно и без лимитов.
