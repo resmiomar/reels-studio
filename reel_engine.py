@@ -97,7 +97,11 @@ NATIVE={
  "kk":[f"kk_KZ-issai-high:{n}" for n in (0,1,3,4)],
  "uk":["uk_UA-tetiana-high","uk_UA-mykyta-high"],
  "zh":["zh_CN-chaowen-medium"],
- "en":["en_US-libritts-high:0","en_US-libritts-high:12"],
+ # Был libritts - и владелец сразу услышал шипение. Причина простая: в libritts
+ # 904 диктора, это начитка аудиокниг, и запись у каждого своя, вместе с шумом
+ # комнаты. Lessac записан в студии одним человеком: шум фона тише на 19 дБ,
+ # а голос при этом даже живее. Правило на будущее: брать модели с ОДНИМ диктором.
+ "en":["en_US-lessac-high"],
  "de":["de_DE-thorsten-high"],
  "fr":["fr_FR-siwis-medium"],
  "es":["es_MX-claude-high"],
