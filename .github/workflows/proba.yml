@@ -55,6 +55,8 @@ jobs:
             pip install -q chatterbox-tts || pip install -q chatterbox-multilingual || \
               pip install -q "git+https://github.com/resemble-ai/chatterbox.git"
           else
+            pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+            pip install -q soundfile
             pip install -q qwen-tts || pip install -q "git+https://github.com/QwenLM/Qwen3-TTS.git"
           fi
           pip list 2>/dev/null | grep -iE "chatterbox|qwen|torch" || true
@@ -82,11 +84,35 @@ jobs:
                   import torchaudio
                   torchaudio.save("out/proba.wav", wav, m.sr)
               else:
-                  from qwen_tts import QwenTTS
-                  m = QwenTTS.from_pretrained("Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice", device="cpu")
+                  # У Qwen голос задаётся СЛОВАМИ: выбираешь диктора и пишешь,
+                  # каким тоном говорить. Для рекламы это ровно то, что нужно -
+                  # можно прямо попросить бодро и с напором.
+                  import torch, soundfile as sf
+                  from qwen_tts import Qwen3TTSModel
+                  m = Qwen3TTSModel.from_pretrained(
+                      "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice",
+                      device_map="cpu", dtype=torch.float32)
                   print(f"модель загружена за {time.time()-t0:.0f} сек", flush=True)
+                  # Имена дикторов заранее не известны - печатаем, что есть.
+                  for atr in ("speakers", "speaker_list", "available_speakers"):
+                      if hasattr(m, atr):
+                          print("дикторы:", getattr(m, atr), flush=True)
                   t1 = time.time()
-                  m.generate(tekst, ref_audio=obrazec, out_path="out/proba.wav")
+                  ukazanie = os.environ.get("TON",
+                      "speak in a warm, energetic and charismatic female voice, "
+                      "like a friendly advertisement, with lively intonation")
+                  wavs = sr = None
+                  for spk in (os.environ.get("DIKTOR") or "Vivian", "Cherry", "Ethan", None):
+                      try:
+                          wavs, sr = m.generate_custom_voice(
+                              text=tekst, language="German", speaker=spk, instruct=ukazanie)
+                          print("диктор подошёл:", spk, flush=True)
+                          break
+                      except Exception as e:
+                          print(f"диктор {spk}: {str(e)[:120]}", flush=True)
+                  if wavs is None:
+                      raise RuntimeError("ни один диктор не подошёл")
+                  sf.write("out/proba.wav", wavs[0], sr)
               print(f"СИНТЕЗ: {time.time()-t1:.0f} сек на {len(tekst)} знаков", flush=True)
           except Exception as e:
               import traceback; traceback.print_exc()
