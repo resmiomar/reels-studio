@@ -74,16 +74,22 @@ jobs:
         run: |
           Y=${{ github.event.inputs.yazyk }}
           mkdir -p out
+          export PROJECT=ibook SOURCE=year KOROTKO=1
+          export WEEK=${{ github.event.inputs.nedelya }}
+          export SLOT=${{ github.event.inputs.slot }}
+          export LANGS_ONLY=$Y KADRY=assets/kadry KLIPY=assets/klipoteka
+          # Имя переменной собираем ЗАРАНЕЕ. Запись вида VOICE_$(...)=значение
+          # bash присваиванием не считает: он ищет знак равенства до подстановки,
+          # не находит и принимает всю строку за имя команды. Из-за этого движок
+          # в прошлый раз не запустился ни разу, а лог остался пустым.
+          PEREM="VOICE_$(echo "$Y" | tr a-z A-Z)"
           for G in ${{ github.event.inputs.golosa }}; do
             echo "=== голос $G"
             # У каждого голоса своя рабочая папка: иначе второй подберёт чужую
             # готовую озвучку и все образцы выйдут одинаковыми.
-            PROJECT=ibook SOURCE=year WEEK=${{ github.event.inputs.nedelya }} \
-            SLOT=${{ github.event.inputs.slot }} LANGS_ONLY=$Y KOROTKO=1 \
-            OUT_DIR=out/$G WORK=out/w-$G \
-            KADRY=assets/kadry KLIPY=assets/klipoteka \
-            VOICE_$(echo $Y | tr a-z A-Z)="piper:$G" \
-            python reel_engine.py 2>&1 | grep -E "DONE|ERR" || true
+            export OUT_DIR="out/$G" WORK="out/w-$G"
+            export "$PEREM=piper:$G"
+            python reel_engine.py 2>&1 | tail -25
           done
           python - <<'PY'
           import os, glob, sys
