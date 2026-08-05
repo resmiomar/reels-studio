@@ -43,7 +43,14 @@ jobs:
           python-version: "3.12"
 
       - name: Поставить голос и зависимости
-        run: pip install -q piper-tts requests httpx pillow onnxruntime unicode-rbnf sentence-stream
+        run: |
+          pip install -q piper-tts requests httpx pillow onnxruntime unicode-rbnf sentence-stream
+          # Немецкий говорит Qwen: у Piper нормального женского немецкого нет.
+          # Ставим только для него - остальным языкам эти полгигабайта ни к чему.
+          if [ "${{ github.event.inputs.yazyk }}" = "de" ]; then
+            pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+            pip install -q soundfile qwen-tts
+          fi
 
       # Голоса и склад тянем из релиза: репозиторий их не выдержит, а в релизе
       # они лежат бесплатно и качаются за минуту.
