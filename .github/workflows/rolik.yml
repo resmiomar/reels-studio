@@ -47,10 +47,10 @@ jobs:
           pip install -q piper-tts requests httpx pillow onnxruntime unicode-rbnf sentence-stream
           # Немецкий говорит Qwen: у Piper нормального женского немецкого нет.
           # Ставим только для него - остальным языкам эти полгигабайта ни к чему.
-          if [ "${{ github.event.inputs.yazyk }}" = "de" ]; then
+          case "${{ github.event.inputs.yazyk }}" in de|zh)
             pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-            pip install -q soundfile qwen-tts
-          fi
+            pip install -q soundfile qwen-tts ;;
+          esac
 
       # Голоса и склад тянем из релиза: репозиторий их не выдержит, а в релизе
       # они лежат бесплатно и качаются за минуту.
