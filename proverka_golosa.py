@@ -162,19 +162,17 @@ def main():
 
     itog = {}
 
-    # Эталон «хорошо»: голос, который владелец одобрил. Достаём из готового ролика.
-    # Имя ищем через нормализацию: внешний диск хранит «й» разложенной на «и» и
-    # значок сверху, и обычное сравнение строк такой файл не находит.
-    import unicodedata as U
-    def norm(s): return U.normalize("NFC", s)
-    obrazec = sorted(f for f in glob.glob(os.path.join(ARHIV, "*.mp4"))
-                     if "русский" in norm(os.path.basename(f)))
-    if obrazec:
-        w = os.path.join(RABOTA, "etalon_eleven.wav")
-        if v_wav(obrazec[0], w):
-            m = mera(w, 250)
+    # Две опорные точки. Берём ЧИСТЫЙ голос без музыки: в готовом ролике звук
+    # сжат и выровнен обработкой, и по нему живость речи уже не измеришь.
+    for imya, f in (("ЭТАЛОН ElevenLabs (одобрен)", "/Volumes/T7/ibook/golos-ru/gotov_ru_eleven.mp3"),
+                    ("ЭТАЛОН робот (забракован)", "/Volumes/T7/ibook/golos-ru/gotov_ru_piper.mp3")):
+        if not os.path.exists(f):
+            continue
+        w = os.path.join(RABOTA, os.path.basename(f) + ".wav")
+        if v_wav(f, w):
+            m = mera(w, len(tekst("ru")))
             if m:
-                itog["ЭТАЛОН ElevenLabs (одобрен)"] = m
+                itog[imya] = m
 
     for lang in ("ru", "kk", "uk", "zh", "en", "de", "fr", "es"):
         w = os.path.join(RABOTA, f"{lang}.wav")
