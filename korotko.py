@@ -29,7 +29,24 @@ os.environ.setdefault("PROJECT", "ibook")
 # Сколько знаков влезает в 25 секунд. Замерено на живой озвучке: около
 # 14-15 знаков в секунду и у ElevenLabs, и у локальных голосов.
 ZNAKOV = int(os.environ.get("KOR_ZNAKOV", "360"))
-CIFRY = re.compile(r"\d|бесплатн|тегін|бепул|ücretsiz|免费|комисси|тенге|месяц|ай\b", re.I)
+# Как узнать фразу-предложение. Раньше здесь были только русские, казахские и
+# турецкие слова, а «\d» ловило цифры. Английские сценарии пишут «thirty days
+# free» словами и «no commission» - ни одно из этого не совпадало, предложение
+# выпадало, и ролик схлопывался до десяти секунд вместо двадцати пяти. Слова
+# добавлены для всех языков, на которых мы работаем.
+CIFRY = re.compile(
+    r"\d"
+    r"|бесплатн|тегін|бепул|комисси|тенге|месяц|ай\b"                    # рус, каз
+    r"|free|commission|month|days|trial|cancel anytime|no fee"           # англ
+    r"|kostenlos|Provision|Monat|Tage|jederzeit"                         # нем
+    r"|gratuit|commission|mois|jours"                                    # фр
+    r"|gratis|comisión|mes\b|días"                                       # исп
+    r"|gratuito|commissione|mese|giorni"                                 # ит
+    r"|ücretsiz|komisyon|\bay\b|gün"                                     # тур
+    r"|免费|佣金|个月|天"                                                  # кит
+    r"|безкоштовн|комісі|місяц|днів"                                     # укр
+    r"|bepul|komissiya|oy\b|kun",                                        # узб
+    re.I)
 
 
 def frazy(t):
@@ -48,11 +65,25 @@ def korotkiy(card, lang, cta):
     predl = next((f for f in reversed(ff) if CIFRY.search(f) and f not in (bol, resh)), "")
 
     out = [x for x in (bol, resh, predl) if x]
-    # если ещё осталось место - добавляем усиление боли, оно держит внимание
-    if sum(len(x) for x in out) < ZNAKOV - 60 and len(ff) > 1:
-        huzhe = next((f for f in ff[1:] if f not in out), "")
-        if huzhe:
-            out.insert(1, huzhe)
+    # Добираем текст до полного хронометража.
+    #
+    # Раньше добавлялась ровно ОДНА фраза, и этого хватало только там, где
+    # предложения длинные. В английском они короткие: три куска давали сто
+    # пятьдесят знаков, то есть десять секунд вместо двадцати пяти. Ролик
+    # обрывался, не успев ничего продать.
+    #
+    # Теперь добираем по одной фразе в исходном порядке, пока есть место.
+    # Порядок важен: мысль должна разворачиваться так, как её написали.
+    mesto = ZNAKOV - 20 - (len(cta.split(".")[0]) if cta else 0)
+    for f in ff[1:]:
+        if f in out:
+            continue
+        # Не влезла одна длинная фраза - пробуем следующую, а не бросаем добор.
+        # С «break» тридцать один английский ролик так и оставался коротким:
+        # место было, но первая же длинная фраза закрывала цикл.
+        if sum(len(x) for x in out) + len(f) + 1 > mesto:
+            continue
+        out.insert(len(out) - 1 if predl and out[-1] == predl else len(out), f)
     t = " ".join(out)
     # призыв обязателен, но короткий: длинный съедает секунды впустую
     if cta:
