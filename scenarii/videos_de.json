@@ -32,7 +32,7 @@
     "screen": "30 Tage gratis, ohne Karte"
    }
   ],
-  "vo": "Januar. Der Stuhl bleibt leer, das Telefon klingelt nicht, aber die Miete zahlt sich nicht von allein. Und deine Kundin? Die sitzt längst am Handy und sucht einen Termin. Gebucht wird bei dem, den sie findet. Also mach dich sichtbar: Profil in ibook anlegen, Arbeiten, Preise, Bewertungen rein, und du bist rund um die Uhr buchbar. Dreißig Tage kostenlos, jederzeit kündbar.",
+  "vo": "Januar. Der Stuhl bleibt leer, das Telefon klingelt nicht, aber die Miete zahlt sich nicht von allein. Und deine Kundin? Die sitzt längst am Handy und sucht einen Termin. Gebucht wird bei dem, den sie findet. Also mach dich sichtbar: Profil in ibook anlegen, Arbeiten, Preise, Bewertungen rein, und du bist rund um die Uhr buchbar. 30 Tage kostenlos, jederzeit kündbar.",
   "cta": "Jetzt ibook laden",
   "caption": "Nach den Feiertagen wird es ruhig, das kennt jede im Beauty-Business. Deine Kundin sucht trotzdem weiter, nur eben im Handy. Leg dein Profil in ibook an, zeig deine Arbeiten und Preise und lass dich rund um die Uhr buchen. 30 Tage kostenlos testen, jederzeit kündbar.",
   "tags": "#friseur #friseurin #kosmetikerin #beautysalon #onlinetermin #terminbuchung #selbststaendig #salonalltag #beautybusiness #januarflaute #ibook",
@@ -71,10 +71,947 @@
     "screen": "ibook: 30 Tage kostenlos"
    }
   ],
-  "vo": "Ende August wird es voll. Alle Eltern wollen ihr Kind noch vor dem Schulanfang zum Friseur bringen, und dein Telefon steht keine Minute still. Du föhnst, das Handy klingelt, ein Anruf geht verloren, und die Familie geht zum Salon nebenan. Mach es dir leichter: Aktiviere deine Online-Terminbuchung bei ibook. Eltern buchen selbst, rund um die Uhr, ohne Anruf. Dreißig Tage kostenlos, jederzeit kündbar.",
+  "vo": "Ende August wird es voll. Alle Eltern wollen ihr Kind noch vor dem Schulanfang zum Friseur bringen, und dein Telefon steht keine Minute still. Du föhnst, das Handy klingelt, ein Anruf geht verloren, und die Familie geht zum Salon nebenan. Mach es dir leichter: Aktiviere deine Online-Terminbuchung bei ibook. Eltern buchen selbst, rund um die Uhr, ohne Anruf. 30 Tage kostenlos, jederzeit kündbar.",
   "cta": "Jetzt 30 Tage gratis testen",
   "caption": "Ende August wollen alle Eltern denselben Termin, und du kommst kaum ans Telefon. Lass sie einfach selbst online buchen, Tag und Nacht, ohne dass du den Föhn aus der Hand legst. In ibook bekommst du deinen eigenen Buchungslink, einen Kalender ohne Doppelbuchung und automatische Erinnerungen. 30 Tage kostenlos, jederzeit kündbar.",
   "tags": "#friseur #friseursalon #schulanfang #onlinetermin #terminbuchung #barbershop #kinderhaarschnitt #salonalltag #selbststaendig #beautybusiness #ibook",
   "music": "Лёгкий поп с нарастающим ритмом, к финалу спокойный и уверенный"
+ },
+ {
+  "week": 36,
+  "slot": "A",
+  "aud": "master",
+  "title": "Все вернулись из отпусков, поток пошёл",
+  "hook": "Der Sommer ist vorbei und plötzlich wollen alle in dieser Woche einen Termin.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Hairdresser stands in a busy salon holding two ringing phones while clients wait behind her, overwhelmed expression. Camera swings around her quickly, bright daylight, chaotic energy. no text, no logos",
+    "screen": "Holidays are over"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "The same hairdresser tries to write a booking on a sticky note while blow drying, the note slips to the floor unnoticed. Camera drops down with the falling note, warm light, small disaster. no text, no logos",
+    "screen": "Notes lost, calls missed"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Hairdresser between clients calmly checking a full week of bookings on her phone, tapping to add an offer to an empty slot. Camera pushes in gently, bright airy salon light, control. no text, no logos",
+    "screen": "They book while you work"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Full salon with every chair busy, hairdresser colouring a client's roots and laughing with her, sunlight through wide windows. Camera glides across the room smoothly, warm lively mood. no text, no logos",
+    "screen": "Every chair full again"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Hairdresser leans against her styling station holding her phone up, points at it and smiles into camera. Static handheld shot, bright clean salon background, warm inviting tones. no text, no logos",
+    "screen": "30 days free to start"
+   }
+  ],
+  "vo": "Der Sommer ist vorbei und plötzlich wollen alle in dieser Woche einen Termin. Entweder füllt dieser Ansturm deinen Kalender oder er begräbt dich unter verpassten Anrufen. In ibook buchen deine Kundinnen selbst, Tag und Nacht, und dein Kalender füllt sich, während du arbeitest. 30 Tage kostenlos, jederzeit kündbar.",
+  "cta": "Fill your season now",
+  "caption": "Nach den Ferien wollen alle gleichzeitig einen Termin. Lass deine Kundinnen selbst buchen, rund um die Uhr, statt Anrufe zu verpassen. Profil in ibook anlegen, Arbeiten und Preise zeigen, der Kalender füllt sich von allein. 30 Tage kostenlos testen, jederzeit kündbar.",
+  "tags": "#hairstylist #hairsalon #backtoschool #beautybusiness #bookingapp #salonlife #hairdresser #beautypro #busyseason #salonsoftware",
+  "music": "динамичный ритм с нарастанием, ощущение старта сезона"
+ },
+ {
+  "week": 36,
+  "slot": "B",
+  "aud": "client",
+  "title": "Вернуться к своему мастеру после лета",
+  "hook": "Sonne, Salzwasser und Chlor hatten den ganzen Sommer Zeit für deine Haare.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Woman at home looks into her bathroom mirror, lifting dry sun damaged hair ends and grimacing at them. Camera pushes in on the mirror reflection, soft window light, honest disappointment. no text, no logos",
+    "screen": "Sun, salt, chlorine"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "The same woman scrolling old beach holiday photos on her phone at her kitchen table, comparing her hair now, quiet sigh. Camera drifts slowly sideways, warm morning light, wistful mood. no text, no logos",
+    "screen": "Your ends are begging"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close shot of her phone as she opens a familiar stylist profile and taps a free slot to book, a small satisfied smile forming. Camera tilts up to her face, bright kitchen daylight. no text, no logos",
+    "screen": "Find your master, tap, done"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Woman in a hairdresser chair with glossy freshly coloured hair, stylist behind her fluffing it, both smiling at the mirror. Camera arcs around them, warm golden salon light, real joy. no text, no logos",
+    "screen": "She remembers your colour"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Woman steps out of the salon onto an autumn city street, tosses her shiny hair and grins at camera. Camera tracks backwards in front of her, soft afternoon sun, upbeat energy. no text, no logos",
+    "screen": "Free for you"
+   }
+  ],
+  "vo": "Sonne, Salzwasser und Chlor hatten den ganzen Sommer Zeit für deine Haare. Jetzt willst du zurück zu der Einen, die genau weiß, was dir steht. In ibook findest du sie in Sekunden, siehst ihre freien Termine und buchst direkt vom Handy. Kein Anruf, keine Warteschleife, 24 Stunden am Tag buchbar.",
+  "cta": "Book your master today",
+  "caption": "Der Sommer war hart zu deinen Haaren. Zeit für die Person, die dich kennt. In ibook findest du sie in Sekunden, siehst freie Termine und buchst direkt vom Handy. Echte Arbeiten, echte Preise, echte Bewertungen. 24 Stunden am Tag.",
+  "tags": "#hairgoals #haircare #hairtransformation #endofsummer #beautyappointment #bookingapp #hairstylist #selfcare #haircolor #glowup",
+  "music": "тёплый мелодичный трек, ностальгия в начале сменяется свежестью"
+ },
+ {
+  "week": 36,
+  "slot": "C",
+  "aud": "master",
+  "title": "Осенние цены меняются в два действия",
+  "hook": "Der Herbst ist da und deine Preise sind gestiegen.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Nail technician in a cozy studio, autumn leaves visible outside the window, she looks up from a client's hand and glances at her phone, warm golden light, camera pushes in slowly, no text, no logos",
+    "screen": "New season, new prices"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of a handwritten price list taped near the mirror with old numbers crossed out, her hand peels one corner, warm lamp light, shallow focus, camera tilts up from the paper, no text, no logos",
+    "screen": "No awkward money talks"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Nail tech sits back between clients, holds her phone with both hands and taps twice, small satisfied nod, soft daylight from the window, handheld camera stays close on her hands, no text, no logos",
+    "screen": "Tap. Type. Save."
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Client in the nail studio admires her fresh autumn manicure and pays calmly at the desk, both women relaxed and chatting, warm amber light, camera arcs slowly around them, no text, no logos",
+    "screen": "New price everywhere"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Nail technician leans on her tidy work table, looks straight into the camera with a warm confident smile, autumn light through the window, camera slowly pulls back, no text, no logos",
+    "screen": "Update prices in two taps."
+   }
+  ],
+  "vo": "Der Herbst ist da und deine Preise sind gestiegen. Du musst das nicht jeder einzeln erzählen. In ibook öffnest du deine Leistungen, tippst auf eine, trägst den neuen Preis ein und speicherst. Ab diesem Moment zeigen dein Profil und jede Buchung den richtigen Preis. 2 Minuten Arbeit, keine peinlichen Gespräche mehr am Ende des Termins.",
+  "cta": "Update prices in two taps.",
+  "caption": "Preise ändern sich im Herbst. In ibook änderst du sie einmal und alle sehen sofort den richtigen Preis, im Profil, im Link und bei jeder Buchung. Keine Erklärungen mehr am Ende des Termins. 30 Tage kostenlos testen.",
+  "tags": "#nailtech #nailsalon #beautypro #pricing #salonlife #beautybusiness #manicure #autumnnails #onlinebooking #bookingapp",
+  "music": "тёплый акустический грув с лёгкой перкуссией"
+ },
+ {
+  "week": 37,
+  "slot": "A",
+  "aud": "master",
+  "title": "Календарь не даст записать двоих на один час",
+  "hook": "Du hast es doppelt eingetragen.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A young nail technician in a bright modern studio freezes mid manicure, phone in hand, two women arriving at the door at once, handheld camera pushes in, warm daylight, panic. no text, no logos.",
+    "screen": "Two clients. One hour."
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close shot of a paper appointment notebook with crossed out lines, the technician rubs her forehead while one client checks the time and quietly walks out, camera drifts sideways, soft window light. no text, no logos.",
+    "screen": "Someone leaves upset"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Over the shoulder view of the same technician tapping a booking calendar on her phone, a taken hour turning solid and locked, calm face, camera slowly orbits, clean bright studio. no text, no logos.",
+    "screen": "The slot locks itself"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The technician works calmly on one happy client, chatting and smiling, empty tidy waiting bench behind them, gentle handheld camera, golden afternoon light through big windows, relaxed unhurried mood. no text, no logos.",
+    "screen": "One client. Zero stress."
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The technician holds up her phone toward camera showing a neat booked day, she nods and smiles, slow push in, bright studio background softly blurred, warm confident energy. no text, no logos.",
+    "screen": "30 days free. No card."
+   }
+  ],
+  "vo": "Du hast es doppelt eingetragen. Jetzt stehen zwei Kundinnen zur selben Stunde vor dir, und eine geht enttäuscht wieder. Das ist kein voller Tag, das ist ein schlechter. In ibook sperrt der Kalender den Termin in der Sekunde, in der er vergeben wird. Keine Doppelbuchung, 0 Streit, jederzeit kündbar.",
+  "cta": "Try free for 30 days",
+  "caption": "Doppelt eingetragen und plötzlich stehen zwei Kundinnen zur selben Zeit da. In ibook sperrt der Kalender den Slot sofort, wenn er vergeben ist. Keine Doppelbuchungen, keine unangenehmen Gespräche. 30 Tage kostenlos testen, jederzeit kündbar.",
+  "tags": "#ibook #bookingapp #nailtech #beautypro #salonsoftware #onlinebooking #doublebooking #beautybusiness #appointmentbook #selfemployed",
+  "music": "спокойный минимал-бит с лёгким напряжением в начале и светлым выходом"
+ },
+ {
+  "week": 37,
+  "slot": "B",
+  "aud": "salon",
+  "title": "Общий график команды: видно всех сразу",
+  "hook": "Das Telefon klingelt, jemand will heute noch einen Termin, und du läufst durch den Salon und fragst, wer frei ist.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Wide shot of a busy hair salon front desk, receptionist holding a ringing phone, looking around at three stylists, confused shrug, handheld camera pans across the room, bright daylight. no text, no logos.",
+    "screen": "Who is free today?"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "One empty styling chair in the middle of a working salon, other stylists busy nearby, camera slowly dollies past the empty chair, quiet cool feeling, soft daylight, mild frustration on the manager face. no text, no logos.",
+    "screen": "An empty chair costs you"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Salon manager at the desk swiping a team schedule on a tablet, columns of stylists and time slots, she taps an open gap, focused eyes, camera moves over her shoulder, bright light. no text, no logos.",
+    "screen": "Whole team on one screen"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Every chair in the salon now occupied, stylists working, clients smiling, receptionist relaxed with coffee, camera glides smoothly through the room, warm afternoon light, calm productive energy. no text, no logos.",
+    "screen": "Every chair working"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Salon manager stands in the doorway of her full salon, arms crossed, satisfied smile, holding a phone, camera pushes in slowly, warm light, confident calm expression. no text, no logos.",
+    "screen": "First 30 days free"
+   }
+  ],
+  "vo": "Das Telefon klingelt, jemand will heute noch einen Termin, und du läufst durch den Salon und fragst, wer frei ist. Währenddessen steht ein Stuhl leer. In ibook liegt das ganze Team auf einem Bildschirm, jede Lücke und jede Buchung, live. 1 Blick genügt, und der Termin ist vergeben.",
+  "cta": "Start free.",
+  "caption": "Ein Stuhl steht leer, während du durch den Salon läufst und fragst, wer Zeit hat. In ibook siehst du das ganze Team auf einem Bildschirm, jede Lücke live. Termin vergeben in Sekunden, ohne Zettel und Rückfragen. 30 Tage kostenlos.",
+  "tags": "#ibook #salonowner #salonmanagement #hairsalon #teamschedule #salonsoftware #bookingapp #beautybusiness #onlinebooking #salonlife #smallbusiness",
+  "music": "лёгкий деловой грув, ровный темп, без агрессии"
+ },
+ {
+  "week": 37,
+  "slot": "C",
+  "aud": "salon",
+  "title": "Смотри, как убрать накладки",
+  "hook": "Doppelbuchungen entstehen fast immer so: zwei Personen tragen an zwei verschiedenen Stellen ein.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Salon manager stands in a busy multi chair salon holding a clipboard, two stylists approach her at once pointing at the same station, natural daylight, camera pushes in on her overwhelmed face, no text, no logos",
+    "screen": "Two books, one chair"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Two stylists at the reception desk writing in two different notebooks, a client waits behind them looking at her watch, bright salon light, camera slides sideways past them, no text, no logos",
+    "screen": "Someone's left waiting"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Manager sits at the reception desk with a tablet, calmly setting up the team schedule, stylists working behind her in soft focus, warm daylight, camera slowly pushes over her shoulder, no text, no logos",
+    "screen": "One shared schedule"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Wide view of the salon working smoothly, three stylists at three chairs with clients, everyone relaxed, manager walks through the room smiling, sunlight through big windows, camera glides down the row, no text, no logos",
+    "screen": "Full day, chair by chair"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Salon manager stands at the front desk, hands on the counter, looking into the camera with a calm proud smile, bright airy salon behind her, slow camera pull back, no text, no logos",
+    "screen": "One schedule for the team."
+   }
+  ],
+  "vo": "Doppelbuchungen entstehen fast immer so: zwei Personen tragen an zwei verschiedenen Stellen ein. Die Lösung ist ein gemeinsamer Plan. In ibook hat jede im Team eigene Zeiten und Leistungen, und der Kalender sperrt den Slot sofort. 1 Plan für alle, 0 Überschneidungen.",
+  "cta": "One schedule for the team.",
+  "caption": "Zwei Listen führen zu doppelten Terminen. Ein gemeinsamer Plan löst das. In ibook hat jede eigene Zeiten und Leistungen, der Kalender sperrt vergebene Slots automatisch. 30 Tage kostenlos testen, jederzeit kündbar.",
+  "tags": "#salonowner #salonmanager #beautysalon #teamwork #salonlife #bookingsystem #beautybusiness #hairsalon #onlinebooking #salonsoftware",
+  "music": "уверенный ритмичный электро-поп, деловое настроение"
+ },
+ {
+  "week": 38,
+  "slot": "A",
+  "aud": "master",
+  "title": "Клиент пишет в приложении, а не в трёх мессенджерах",
+  "hook": "Eine Kundin schreibt dir hier, die nächste dort, die dritte irgendwo, wo du heute nicht nachgesehen hast.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A barber mid haircut juggling two buzzing phones on his station, clippers in one hand, frustrated annoyed face, handheld camera shakes slightly, warm lamp light, dark wood barbershop interior. no text, no logos.",
+    "screen": "Three apps, one client"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of two phone screens face down on a barber station next to hair clippings, the barber checks one late at night in an empty shop, tired eyes, slow camera creep, dim moody light. no text, no logos.",
+    "screen": "You missed a booking"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The barber taps one chat thread inside a booking app on his phone and replies with one hand between clients, relieved half smile, camera moves in over his shoulder, bright morning window light. no text, no logos.",
+    "screen": "All chats in one place"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The barber finishes a fade, the client checks the mirror and laughs, they bump fists, next client already seated waiting, handheld camera circles them, warm daylight, easy friendly mood. no text, no logos.",
+    "screen": "Answer once, done"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The barber leans on his chair holding his phone toward the camera, confident nod, tidy barbershop behind him, slow push in, warm golden light, calm proud expression. no text, no logos.",
+    "screen": "Free 30 days, no card"
+   }
+  ],
+  "vo": "Eine Kundin schreibt dir hier, die nächste dort, die dritte irgendwo, wo du heute nicht nachgesehen hast. Am Abend fehlt eine Antwort und damit eine Buchung. In ibook liegen alle Nachrichten an einer Stelle, direkt neben dem Termin, um den es geht. 1 Ort statt 3 Messenger.",
+  "cta": "Get ibook, free 30 days",
+  "caption": "Nachrichten in drei Messengern, und abends fehlt eine Antwort und damit eine Buchung. In ibook liegt jeder Chat an einer Stelle, direkt neben dem passenden Termin. Du antwortest einmal und vergisst nichts. 30 Tage kostenlos.",
+  "tags": "#ibook #barber #barbershop #bookingapp #clientchat #beautypro #salonsoftware #onlinebooking #beautybusiness #barberlife",
+  "music": "нервный ритм в завязке, к финалу переходит в чистый уверенный бит"
+ },
+ {
+  "week": 38,
+  "slot": "B",
+  "aud": "client",
+  "title": "Написать мастеру прямо в приложении",
+  "hook": "Du willst nur kurz fragen, ob sie Samstag Zeit hat, oder ihr ein Foto von der Frisur schicken.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A young woman on her couch at home scrolls endlessly through phone contacts trying to find a number, frowning, blanket and warm evening lamp light, camera slowly pushes in on her face. no text, no logos.",
+    "screen": "Where is her number?"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "The same woman walks down a city street at dusk switching between apps on her phone, sighing, still no answer, camera tracks beside her, cool blue evening light, mild irritation. no text, no logos.",
+    "screen": "Still no answer"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The woman sits in a warm cafe and opens a beauty booking app, taps a stylist profile with photos and prices, starts typing a message, close camera on her hands, soft window light, curious smile. no text, no logos.",
+    "screen": "Just open and write"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The woman in a salon chair shows a photo on her phone to a smiling stylist, they laugh together, mirror reflection behind them, camera glides around the chair, bright daylight, trusting connection. no text, no logos.",
+    "screen": "She got exactly your idea"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The woman walks out of the salon with fresh hair, flips it, grins at the camera, phone in hand, sunny city street behind her, camera pulls back smoothly, warm light. no text, no logos.",
+    "screen": "Free for you, always"
+   }
+  ],
+  "vo": "Du willst nur kurz fragen, ob sie Samstag Zeit hat, oder ihr ein Foto von der Frisur schicken. Also suchst du die Nummer, dann das Profil, dann den alten Chat. In ibook öffnest du ihre Seite und schreibst. Gleiche Stelle, an der du auch buchst. 24 Stunden am Tag erreichbar.",
+  "cta": "Download ibook, it is free",
+  "caption": "Nummer suchen, Profil suchen, alten Chat suchen. Oder einfach ihre Seite in ibook öffnen und schreiben. Fragen, Foto schicken, Termin buchen, alles an einer Stelle. Rund um die Uhr.",
+  "tags": "#ibook #beautyapp #bookingapp #hairappointment #nailsofinstagram #selfcare #beautyroutine #onlinebooking #glowup #salonday #beautytips",
+  "music": "тёплый поп-грув, мягкий и дружелюбный"
+ },
+ {
+  "week": 38,
+  "slot": "C",
+  "aud": "master",
+  "title": "Как помнить каждого клиента",
+  "hook": "Du kannst dir nicht jedes Detail merken, und das musst du auch nicht.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Massage therapist in a calm warm lit room greets a returning client at the door, she pauses trying to recall a detail, soft lamp light, camera pushes in slowly on her thoughtful face, no text, no logos",
+    "screen": "Her name, her shade"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of the therapist's face during the session, gently concentrating, warm low light and soft towels around her, camera drifts slowly along the massage table, quiet focused mood, no text, no logos",
+    "screen": "Too much to keep in your head"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "After the session the therapist sits at a small side table and types a short note on her phone, candle and folded towels beside her, warm light, camera slowly pushes in on her hands, no text, no logos",
+    "screen": "One line after each appointment"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Next visit, the therapist confidently prepares the exact oil and pressure the client likes, the client smiles surprised and pleased, warm soft light, camera arcs around the room, no text, no logos",
+    "screen": "She feels remembered"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Massage therapist stands in her calm treatment room, arms relaxed, warm smile straight into the camera, soft golden lamp light, slow camera pull back showing the tidy space, no text, no logos",
+    "screen": "Try it free for a month."
+   }
+  ],
+  "vo": "Du kannst dir nicht jedes Detail merken, und das musst du auch nicht. Schreib nach dem Termin eine Zeile in die Kundenkarte: die Mischung, die Länge, das Getränk. In ibook steht beim nächsten Mal alles da, bevor sie sitzt. 1 Zeile pro Termin, und du wirkst wie jemand, der sich alles merkt.",
+  "cta": "Try it free for a month.",
+  "caption": "Niemand merkt sich alles. Schreib nach dem Termin eine Zeile in die Kundenkarte. In ibook steht beim nächsten Besuch alles bereit: Farbe, Länge, Vorlieben. Deine Kundin fühlt sich erkannt. 30 Tage kostenlos testen.",
+  "tags": "#massagetherapist #beautypro #clientcare #salonlife #beautybusiness #spalife #repeatclients #onlinebooking #bookingapp #selfemployed",
+  "music": "тихий эмбиент с мягким пульсом, уютно"
+ },
+ {
+  "week": 39,
+  "slot": "A",
+  "aud": "master",
+  "title": "Постоянные клиенты и вся история визитов",
+  "hook": "Sie kommt herein und dir fällt der Name nicht ein.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A brow artist greets a returning client in a soft pastel studio, smiles blankly while struggling to remember her name, awkward pause, handheld camera holds on her face, bright airy daylight. no text, no logos.",
+    "screen": "Her name is... uh"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of a messy stack of paper client cards and sticky notes in a drawer, the artist digs through them quickly while the client waits in the chair, camera tilts down, soft light. no text, no logos.",
+    "screen": "Notes everywhere"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The artist opens a client card on her phone with visit history before the session, nods to herself, calm confident face, camera glides over her shoulder, clean pastel studio, natural light. no text, no logos.",
+    "screen": "Every client has a card"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The artist shapes brows while chatting easily with the client about her last visit, both laughing, mirror nearby, camera slowly circles the chair, warm daylight, comfortable familiar mood. no text, no logos.",
+    "screen": "You remember everything"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The client hugs the artist goodbye and rebooks at the door, the artist holds her phone, both smiling, camera pulls back through the studio, warm afternoon light, friendly energy. no text, no logos.",
+    "screen": "Try free for 30 days"
+   }
+  ],
+  "vo": "Sie kommt herein und dir fällt der Name nicht ein. Das Gesicht kennst du, den Rest nicht mehr. In ibook hat jede Kundin eine Karte: Name, Telefon, jeder Besuch, jede Leistung, jede Notiz. 1 Tipp, bevor sie sitzt, und du weißt wieder alles. 30 Tage kostenlos, jederzeit kündbar.",
+  "cta": "Try ibook free today",
+  "caption": "Gesicht bekannt, Name weg. In ibook hat jede Kundin eine Karte mit allen Besuchen, Leistungen und Notizen. Ein Tipp vor dem Termin und du weißt wieder alles. 30 Tage kostenlos testen.",
+  "tags": "#ibook #browartist #lashtech #clientcare #beautypro #salonsoftware #bookingapp #beautybusiness #regularclients #beautystudio",
+  "music": "мягкая тёплая мелодия, лёгкая ностальгия, светлый финал"
+ },
+ {
+  "week": 39,
+  "slot": "B",
+  "aud": "master",
+  "title": "Что делали в прошлый раз, помнит приложение",
+  "hook": "Sie setzt sich und sagt: das Gleiche wie letztes Mal.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A colourist stands over her mixing bowl looking lost while the client in the chair points at her own hair asking for the same as last time, handheld camera pushes in, bright salon light. no text, no logos.",
+    "screen": "Same as last time?"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of the colourist flipping through a worn notebook full of unreadable scribbles, she bites her lip, colour tubes scattered across the counter, slow camera drift, cool daylight. no text, no logos.",
+    "screen": "Your notes say nothing"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The colourist checks previous visit details on her phone, then mixes colour with total confidence, precise hands, camera moves from the phone to the bowl, bright clean salon, focused calm face. no text, no logos.",
+    "screen": "Last visit is right there"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The client sees her finished colour in the mirror and beams, touching her hair, the colourist smiling behind her, camera arcs around the chair, warm golden salon light, happy moment. no text, no logos.",
+    "screen": "Exactly the same. Again."
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The colourist wipes her station clean and lifts her phone toward the camera with a small proud smile, tidy salon behind her, slow push in, warm daylight, relaxed confidence. no text, no logos.",
+    "screen": "First month free"
+   }
+  ],
+  "vo": "Sie setzt sich und sagt: das Gleiche wie letztes Mal. Das Gleiche wie was? Du rätst bei einer Farbe, die du vor Wochen gemischt hast. In ibook steht der letzte Besuch direkt da: was du gemacht hast, wie lange es dauerte, was es kostete. 0 Raten, 0 Entschuldigungen.",
+  "cta": "First month on us",
+  "caption": "Das Gleiche wie letztes Mal, nur welches Gleiche? In ibook steht der letzte Besuch mit Leistung, Dauer, Preis und deinen Notizen. Du triffst die Farbe beim ersten Versuch. 30 Tage kostenlos testen.",
+  "tags": "#ibook #haircolorist #hairstylist #salonsoftware #clienthistory #beautypro #bookingapp #hairsalon #beautybusiness #colorformula",
+  "music": "лёгкий уверенный бит, чуть игривый, ровный темп"
+ },
+ {
+  "week": 39,
+  "slot": "C",
+  "aud": "client",
+  "title": "Повторить запись - три касания",
+  "hook": "Der letzte Termin war gut? Dann such niemanden neu.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Young woman sitting in a sunny cafe touches her fresh haircut in the window reflection and smiles, phone on the table, camera slowly pushes in, warm daylight, relaxed mood, no text, no logos",
+    "screen": "Loved your last appointment?"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of her hands holding the phone over a coffee cup, scrolling calmly, cafe blurred into warm bokeh behind her, soft daylight, camera drifts slightly left, content expression, no text, no logos",
+    "screen": "No searching again"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Over the shoulder view of the blurred phone screen as her thumb taps three times, she raises her eyebrows pleased at how fast it went, warm cafe light, steady handheld camera, no text, no logos",
+    "screen": "Three taps, booked"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Weeks later the same woman sits in a salon chair, her usual stylist smiling behind her, they chat easily while the blow dryer runs, bright daylight, camera arcs around the chair, no text, no logos",
+    "screen": "Same chair, same person"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Woman walks out of the salon onto a bright city street, hair moving, sunglasses on, laughing at something on her phone, camera tracks her from the front, warm afternoon sun, no text, no logos",
+    "screen": "Rebook in three taps."
+   }
+  ],
+  "vo": "Der letzte Termin war gut? Dann such niemanden neu. Öffne deine Buchungen in ibook, tippe auf die Person, bei der du warst, und wähle den nächsten freien Termin. 3 Berührungen und es steht. Gleiche Person, gleiche Leistung, und die Erinnerung kommt von allein.",
+  "cta": "Rebook in three taps.",
+  "caption": "Wieder zur selben Person? Buchungen öffnen, antippen, freien Termin wählen. Drei Berührungen in ibook und der Termin steht. Erinnerung kommt automatisch, damit du ihn nicht vergisst.",
+  "tags": "#hairsalon #rebook #selfcare #beautyroutine #salonday #bookonline #beautyapp #hairgoals #citylife #treatyourself",
+  "music": "солнечный инди-поп с гитарой, лёгкий и живой"
+ },
+ {
+  "week": 40,
+  "slot": "A",
+  "aud": "master",
+  "title": "Смотришь цифры месяца и понимаешь, что менять",
+  "hook": "Du hast jeden Tag gearbeitet und kannst trotzdem nicht sagen, welche Leistung sich wirklich gelohnt hat.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A cosmetologist sits alone in her treatment room at the end of a long day staring at the ceiling, tired, clean equipment around her, camera slowly pushes in, soft evening light. no text, no logos.",
+    "screen": "Worked every day"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "She flips through a paper diary full of appointments and shrugs, unable to tell what actually worked, camera drifts across the desk with skincare bottles, muted daylight, thoughtful frustrated expression. no text, no logos.",
+    "screen": "Busy is not the same as paid"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The cosmetologist scrolls monthly reports on her phone showing busy hours and services, her eyebrows lift as something clicks, camera moves in over her shoulder, bright clean white room, natural light. no text, no logos.",
+    "screen": "Reports show it plainly"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The cosmetologist confidently books a new client at her desk in a calm organised room, sunlight across the counter, camera glides through the space, she smiles to herself, fully in control. no text, no logos.",
+    "screen": "Now you know what to change"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The cosmetologist stands in her bright treatment room holding her phone up to the camera, warm assured smile, slow push in, soft daylight, clean modern interior. no text, no logos.",
+    "screen": "Try it free, no card"
+   }
+  ],
+  "vo": "Du hast jeden Tag gearbeitet und kannst trotzdem nicht sagen, welche Leistung sich wirklich gelohnt hat. Beschäftigt sein ist nicht dasselbe wie Bescheid wissen. In ibook öffnest du die Auswertung und siehst es schwarz auf weiß: volle Tage, leere Stunden, gefragte Leistungen. 1 Blick pro Monat verändert dein Jahr.",
+  "cta": "Open your numbers free",
+  "caption": "Voller Terminkalender heißt nicht automatisch gutes Geld. In ibook zeigt die Auswertung, welche Leistungen laufen, welche Tage voll sind und welche leer bleiben. Ein Blick pro Monat. 30 Tage kostenlos testen.",
+  "tags": "#ibook #esthetician #cosmetologist #beautybusiness #salonsoftware #bookingapp #beautypro #businesstips #skincarepro #selfemployed",
+  "music": "сдержанный аналитичный бит, к финалу светлеет"
+ },
+ {
+  "week": 40,
+  "slot": "B",
+  "aud": "salon",
+  "title": "Отчёт по салону: кто загружен, кто простаивает",
+  "hook": "Eine Mitarbeiterin ist ausgebucht und im Stress.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "One massage therapist works nonstop in a warm spa room while another sits idle on a stool scrolling her phone across the corridor, camera tracks slowly between them, soft warm lighting. no text, no logos.",
+    " screen": "One is buried. One is idle.",
+    "screen": "One is buried. One is idle."
+   },
+   {
+    "sec": "4-11",
+    "prompt": "The salon owner stands in the hallway rubbing her temples, glancing at two doors, one busy and one empty, camera holds still then drifts in, dim warm light, quiet worry. no text, no logos.",
+    "screen": "You feel it, cannot prove it"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The owner sits in a small office reviewing a team report on a tablet with a bar for each therapist, she circles a quiet hour with her finger, camera over her shoulder, bright desk lamp light. no text, no logos.",
+    "screen": "Every master, side by side"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "All treatment rooms busy, therapists walking with fresh towels, clients arriving at reception, the owner watching with a calm smile, camera glides through the corridor, warm inviting light. no text, no logos.",
+    "screen": "The whole floor works"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The salon owner stands at reception holding her phone toward the camera, confident nod, staff working behind her, slow push in, warm spa lighting, proud composed expression. no text, no logos.",
+    "screen": "30 days free, cancel anytime"
+   }
+  ],
+  "vo": "Eine Mitarbeiterin ist ausgebucht und im Stress. Die andere scrollt zwischen zwei Kundinnen am Handy. Du spürst es, aber beweisen kannst du es nicht, also ändert sich nichts. In ibook stellt die Salon-Auswertung alle nebeneinander: wer ausgelastet ist, wer frei ist, wer was bringt. 1 Bildschirm, und die Diskussion ist vorbei.",
+  "cta": "Start your free 30 days",
+  "caption": "Die eine im Stress, die andere am Handy. In ibook zeigt die Salon-Auswertung alle nebeneinander: Auslastung, Umsatz, freie Zeiten. Entscheidungen nach Zahlen statt nach Gefühl. 30 Tage kostenlos.",
+  "tags": "#ibook #salonowner #spabusiness #salonmanagement #teamreports #salonsoftware #bookingapp #beautybusiness #massagetherapist #smallbusinesstips",
+  "music": "спокойный сдержанный грув с ощущением контроля"
+ },
+ {
+  "week": 40,
+  "slot": "C",
+  "aud": "master",
+  "title": "Разбери свой месяц по цифрам",
+  "hook": "Monatsende ist der richtige Moment für deine Zahlen.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Barber closing up his shop in the evening, chairs empty, he sits down in his own barber chair with a phone in hand, warm lamp light, camera slowly pushes in on his thoughtful face, no text, no logos",
+    "screen": "How was your month?"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of the barber leaning back, scratching his beard while looking at his phone, mirrors and clippers softly blurred behind him, warm evening light, camera drifts slowly right, no text, no logos",
+    "screen": "Stop guessing"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The barber studies his phone screen intently, then nods and points at it as if something finally clicked, cozy shop light, handheld camera stays close on his face and hands, no text, no logos",
+    "screen": "Your reports tell you"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Busy morning in the barbershop, two chairs full, the barber works confidently while another client waits with coffee, bright daylight through the window, camera glides through the room, no text, no logos",
+    "screen": "Fill the quiet days"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Barber stands in the middle of his shop, towel over his shoulder, looking into the camera with a calm confident smile, warm light, slow camera pull back, no text, no logos",
+    "screen": "Open your reports tonight."
+   }
+  ],
+  "vo": "Monatsende ist der richtige Moment für deine Zahlen. Öffne die Auswertung in ibook und schau auf drei Dinge: welche Leistungen wirklich gebucht werden, welche Tage voll sind und welche leer bleiben. Dann mach aus den leeren Stunden ein Angebot. 3 Zahlen, 1 Entscheidung.",
+  "cta": "Open your reports tonight.",
+  "caption": "Setz dich zum Monatsende hin und schau auf drei Zahlen: gefragte Leistungen, volle Tage, leere Stunden. In ibook steht alles auf einem Bildschirm. Aus leeren Stunden machst du ein Angebot. 30 Tage kostenlos.",
+  "tags": "#barber #barbershop #beautypro #smallbusiness #analytics #salonowner #businesstips #onlinebooking #bookingapp #beautybusiness",
+  "music": "сдержанный хип-хоп бит, вечерний и уверенный"
+ },
+ {
+  "week": 41,
+  "slot": "A",
+  "aud": "master",
+  "title": "Пустые утренние окна: чем заполнить",
+  "hook": "Deine Vormittage sind leer, deine Abende voll.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A barber stands alone in a bright empty barbershop, morning light through the window, checking his phone, quiet disappointment on his face, slow camera push in, warm tones, no text, no logos",
+    "screen": "9am. Nobody."
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Empty barber chair in the foreground, the barber wipes the counter with nothing to do, clock on the wall, soft daylight, camera slowly drifts sideways, calm sad mood, no text, no logos",
+    "screen": "Empty hours cost you money"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close up of hands holding a phone, tapping through a booking app calendar and setting a morning offer, bright studio background out of focus, camera slowly tilts down, warm light, no text, no logos",
+    "screen": "Deals on your free slots"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The barbershop is busy, a client sits in the chair while the barber works and smiles, another client waits by the window, handheld camera moves around them, warm morning sunlight, no text, no logos",
+    "screen": "Morning booked out"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The barber looks into the camera holding his phone, relaxed confident smile, bright clean shop behind him, camera holds steady at chest height, soft warm daylight, no text, no logos",
+    "screen": "30 days free. No card."
+   }
+  ],
+  "vo": "Deine Vormittage sind leer, deine Abende voll. Das ist Geld, das du nie wiedersiehst. In ibook machst du aus jeder leeren Stunde ein Angebot, und Kundinnen, die rund um die Uhr buchen, greifen zu, bevor dein Kaffee kalt wird. 0 Provision auf deine Leistungen, 30 Tage kostenlos.",
+  "cta": "Get ibook free for 30 days",
+  "caption": "Leere Vormittage sind verlorenes Geld. In ibook machst du aus einer stillen Stunde ein Angebot, sichtbar für alle, die gerade suchen. Keine Provision auf deine Leistungen. 30 Tage kostenlos testen.",
+  "tags": "#ibook #beautybusiness #barberlife #salonowner #bookingapp #beautypro #hairstylist #nailtech #lashartist #smallbusinesstips #onlinebooking",
+  "music": "Спокойный утренний лоу-фай бит, мягкий и уверенный"
+ },
+ {
+  "week": 41,
+  "slot": "B",
+  "aud": "client",
+  "title": "Свободное утреннее окно прямо сейчас",
+  "hook": "Ein freier Vormittag und nichts geplant? Dann ruf nicht überall an und warte auf einen Rückruf.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A young woman in a bright bedroom wakes up and reaches for her phone, morning light through sheer curtains, she smiles at the screen, camera slowly pushes in, warm soft tones, no text, no logos",
+    "screen": "Free morning? Use it."
+   },
+   {
+    "sec": "4-11",
+    "prompt": "The same woman sits on the edge of the bed holding the phone to her ear, waiting, slightly annoyed, she hangs up and sighs, camera stays close on her face, soft daylight, no text, no logos",
+    "screen": "Calling around, nobody picks up"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Over the shoulder view of the woman scrolling a booking app on her phone at a kitchen table, tapping a free time slot, coffee cup beside her, camera drifts slowly right, bright daylight, no text, no logos",
+    "screen": "Book in a few taps"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The woman sits at a nail table in a light modern studio, the nail artist works on her hands, both laughing, handheld camera slowly circles the table, warm daylight from a big window, no text, no logos",
+    "screen": "Booked at 10, done by 11"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The woman walks out onto a sunny city street showing her fresh nails to the camera, happy relaxed smile, people passing behind her, camera tracks backwards, bright warm afternoon light, no text, no logos",
+    "screen": "Free app. App Store, Google Play"
+   }
+  ],
+  "vo": "Ein freier Vormittag und nichts geplant? Dann ruf nicht überall an und warte auf einen Rückruf. Öffne ibook, sieh, wer in deiner Nähe gerade einen Termin frei hat, und buche in wenigen Berührungen. Echte Profile, echte Preise, echte Bewertungen. 1 freier Vormittag, gut genutzt.",
+  "cta": "Download ibook free",
+  "caption": "Spontan Zeit? In ibook siehst du, wer in deiner Nähe jetzt frei ist, mit Arbeiten, Preisen und Bewertungen. Buchen in wenigen Berührungen, ohne Anruf und Warteschleife.",
+  "tags": "#ibook #nailsofinstagram #beautyappointment #selfcareday #bookonline #manicure #beautytime #treatyourself #salonday #beautyapp",
+  "music": "Лёгкий солнечный поп с приятным ритмом"
+ },
+ {
+  "week": 41,
+  "slot": "C",
+  "aud": "salon",
+  "title": "Салон: кто простаивает - за 30 секунд",
+  "hook": "Öffne den Salon-Kalender in ibook und wechsle zur Teamansicht.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Salon manager at a bright reception desk holds a tablet and looks up with a calm confident smile, three styling chairs busy behind her, camera slowly pushes in, warm daylight, no text, no logos",
+    "screen": "Open the team view"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Wide shot of a salon floor, two masters working while one chair sits empty with a folded towel on it, camera glides sideways past the mirrors, soft daylight, quiet everyday mood, no text, no logos",
+    "screen": "Every chair on one screen"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close shot over the shoulder of the manager tapping a phone, thumb sliding across a weekly schedule grid, hand movements clear and unhurried, camera locked on her hands, warm window light, no text, no logos",
+    "screen": "Open slots show up fast"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The same empty chair now taken by a smiling client getting her hair styled, the manager nods from the desk and relaxes her shoulders, camera lifts slightly, warm golden afternoon light, no text, no logos",
+    "screen": "Turn a gap into an offer"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Manager and two masters stand together near the mirrors laughing softly at the end of a good day, one holds a phone loosely, camera slowly pulls back, warm inviting light, no text, no logos",
+    "screen": "30 days free, no card"
+   }
+  ],
+  "vo": "Öffne den Salon-Kalender in ibook und wechsle zur Teamansicht. Jeder Platz nebeneinander. Die Lücken springen dir sofort ins Auge, und du siehst, wer ausgebucht ist und wer einen leeren Nachmittag hat. Tippe auf eine freie Stunde und mach ein Angebot daraus. 30 Sekunden Arbeit.",
+  "cta": "Try ibook free for 30 days",
+  "caption": "Teamansicht öffnen und die Lücken sehen. In ibook erkennst du in 30 Sekunden, wer ausgelastet ist und wer leer läuft. Freie Stunde antippen, Angebot daraus machen. 30 Tage kostenlos testen.",
+  "tags": "#salonowner #salonlife #beautybusiness #bookingapp #salonsoftware #hairsalon #beautypro #onlinebooking #salonmanager #teamschedule",
+  "music": "спокойный лоу-фай бит, мягкий, без напора"
+ },
+ {
+  "week": 42,
+  "slot": "A",
+  "aud": "master",
+  "title": "Клиенты привыкли звонить: что дальше",
+  "hook": "Klar rufen deine Kundinnen gern an.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A hairdresser mid haircut, scissors in hand, her phone buzzing on the counter beside her, she glances at it and cannot answer, camera pushes in on the phone, bright daylight, no text, no logos",
+    "screen": "Hands busy. Phone ringing."
+   },
+   {
+    "sec": "4-11",
+    "prompt": "A woman on a city street lowers her phone after an unanswered call and taps another salon instead, then walks away, camera follows her from behind, soft afternoon daylight, no text, no logos",
+    "screen": "One missed call, one lost client"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close up of the hairdresser between clients, thumb sending her personal booking link in a chat on her phone, salon mirrors softly blurred behind, camera slides slowly left, warm indoor light, no text, no logos",
+    "screen": "Send your link once"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The hairdresser sits in her salon chair with a coffee, looking at her phone calendar, relaxed satisfied smile, sunlight across the mirrors, camera slowly orbits around her, warm golden tones, no text, no logos",
+    "screen": "Bookings while you work"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The hairdresser stands in the middle of her bright salon holding her phone up, warm confident smile at the camera, styling chairs behind her, camera slowly pulls back, soft daylight, no text, no logos",
+    "screen": "First month free"
+   }
+  ],
+  "vo": "Klar rufen deine Kundinnen gern an. Aber deine Hände sind beschäftigt und das Telefon klingelt weiter. Ein verpasster Anruf und sie bucht woanders. Schick einmal deinen persönlichen ibook Link, und sie sucht sich selbst eine Zeit, Tag oder Nacht. 1 Link statt 20 Rückrufe.",
+  "cta": "Try ibook free for 30 days",
+  "caption": "Deine Hände sind beschäftigt, das Telefon klingelt weiter, und ein verpasster Anruf bucht woanders. Schick einmal deinen ibook Link und sie wählt selbst eine Zeit, rund um die Uhr. 30 Tage kostenlos.",
+  "tags": "#ibook #hairstylist #salonlife #beautybusiness #bookingapp #hairsalon #beautypro #clientbooking #smallbusinessowner #onlinebooking #stylistlife",
+  "music": "Ритмичный минималистичный бит, чуть настойчивый"
+ },
+ {
+  "week": 42,
+  "slot": "B",
+  "aud": "master",
+  "title": "Мало клиентов: зачем мне приложение",
+  "hook": "Wenige Kundinnen sind genau der Grund, hier zu sein.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A lash artist sits alone in a small bright studio, arms crossed, looking doubtfully at her phone, empty client bed beside her, camera slowly pushes in on her face, soft daylight, no text, no logos",
+    "screen": "I only have a few clients"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "A woman on a couch at home scrolls her phone searching for a lash artist nearby, frowning, finds nothing useful, she puts the phone down, camera drifts slowly closer, warm lamp light, no text, no logos",
+    "screen": "They just can't find you"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Hands holding a phone showing a beauty profile page with photos and prices, then a city map view with nearby pins, bright studio blurred behind, camera tilts slowly up, warm daylight, no text, no logos",
+    "screen": "Profile, prices, map"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "A new client walks into the small lash studio and greets the artist warmly, the artist smiles and shows her to the bed, handheld camera follows them in, bright natural window light, no text, no logos",
+    "screen": "New faces, not just regulars"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The lash artist looks into the camera in her tidy bright studio, holding her phone, calm proud smile, plants and soft daylight around her, camera holds still and slowly rises, no text, no logos",
+    "screen": "30 days free. Cancel anytime."
+   }
+  ],
+  "vo": "Wenige Kundinnen sind genau der Grund, hier zu sein. Menschen in deiner Nähe suchen gerade jetzt und finden dich einfach nicht. Leg ein Profil in ibook an, mit deinen Arbeiten, Preisen und Bewertungen, und zeig dich in der Suche und auf der Karte. 30 Tage kostenlos, jederzeit kündbar.",
+  "cta": "Start free, cancel anytime",
+  "caption": "Wenige Kundinnen heißt oft nur: dich findet niemand. In ibook zeigst du Arbeiten, Preise und Bewertungen und erscheinst in der Suche und auf der Karte deiner Stadt. 30 Tage kostenlos testen.",
+  "tags": "#ibook #lashartist #browartist #beautybusiness #beautypro #newclients #bookingapp #smallbusinesstips #beautystudio #getbooked #onlinebooking",
+  "music": "Тёплый акустический бит с мягким подъёмом"
+ },
+ {
+  "week": 42,
+  "slot": "C",
+  "aud": "master",
+  "title": "Мастер: оплата - всего два действия",
+  "hook": "Jetzt zum Geld, und das sind nur zwei Schritte.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Barber in a dark apron finishes a clean fade, brushes the client's neck, then looks straight into the camera with a friendly half smile, camera steady at chest height, warm lamp light, no text, no logos",
+    "screen": "Two steps, that's all"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Client in the barber chair reaches for his wallet with an unsure look while the barber shrugs politely, a small awkward pause between them, camera slowly circles the chair, soft evening light, no text, no logos",
+    "screen": "No awkward money talk"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close view of the barber's hands on a phone, thumb tapping a service line and typing a number into a price field, calm and quick, camera tight over his shoulder, warm daylight, no text, no logos",
+    "screen": "Open the service, set a price"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Client stands up, shakes the barber's hand and walks out relaxed, the barber tidies his station with a satisfied smile, camera follows him smoothly, warm afternoon light through the window, no text, no logos",
+    "screen": "Clients see the price first"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Barber sits in his own chair between clients, phone in hand, nodding at the screen with quiet satisfaction, mirrors reflecting the empty shop, camera slowly pushes in, soft warm light, no text, no logos",
+    "screen": "Zero commission on your work"
+   }
+  ],
+  "vo": "Jetzt zum Geld, und das sind nur zwei Schritte. Leistung in ibook öffnen, Preis eintragen. Fertig. Ab sofort sieht jede Kundin den Preis vor der Buchung, und das unangenehme Gespräch am Ende fällt weg. 0 Provision auf deine Leistungen, für immer.",
+  "cta": "Set your price in ibook today",
+  "caption": "Zwei Schritte: Leistung öffnen, Preis eintragen. Ab dann sieht jede Kundin den Preis vor der Buchung. Keine Provision auf deine Leistungen. 30 Tage kostenlos testen, jederzeit kündbar.",
+  "tags": "#barberlife #barbershop #beautypro #bookingapp #onlinebooking #hairstylist #nailtech #beautybusiness #selfemployed #pricing",
+  "music": "уверенный ритмичный грув, лёгкий, без агрессии"
+ },
+ {
+  "week": 43,
+  "slot": "A",
+  "aud": "salon",
+  "title": "Мастер или салон: какая подписка твоя",
+  "hook": "Arbeitest du allein? Dann ist der Master Tarif deiner: dein Profil, dein Link, dein Kalender.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A salon owner stands in the middle of a busy light salon with several chairs, hands on hips, looking around at her team working, camera slowly pans across the room, warm daylight, no text, no logos",
+    "screen": "Which plan is yours?"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "Close up of a paper appointment book on the salon reception desk covered in crossed out names, two stylists lean over it confused, camera moves slowly across the pages, soft daylight, no text, no logos",
+    "screen": "Who works when? Nobody knows"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "The salon owner holds a tablet at the reception desk showing a team schedule with several columns, she taps and nods, stylists working softly blurred behind her, camera glides slowly right, bright light, no text, no logos",
+    "screen": "One shared team calendar"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "Wide shot of the salon in full flow, every chair taken, stylists working with clients, the owner smiles from the desk with her phone, handheld camera drifts through the room, warm daylight, no text, no logos",
+    "screen": "Reports for every stylist"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The salon owner and two stylists stand together smiling at the camera in the bright salon, relaxed friendly mood, big window behind them, camera slowly pulls back to a wide view, no text, no logos",
+    "screen": "Pay yearly: 10 months, not 12"
+   }
+  ],
+  "vo": "Arbeitest du allein? Dann ist der Master Tarif deiner: dein Profil, dein Link, dein Kalender. Führst du ein Team? Der Salon Tarif gibt dir einen gemeinsamen Plan, alle an einer Stelle und eine Auswertung, wer was bringt. Gleiche App ibook, 0 Provision auf Leistungen, 30 Tage kostenlos.",
+  "cta": "Pick your plan free today",
+  "caption": "Allein oder im Team? Master Tarif für dein eigenes Profil und deinen Kalender, Salon Tarif für gemeinsamen Plan und Auswertung. Gleiche App, keine Provision auf Leistungen. 30 Tage kostenlos.",
+  "tags": "#ibook #salonowner #salonmanagement #beautybusiness #teamwork #hairsalon #beautysalon #bookingapp #salonsoftware #smallbusinessowner #beautypro",
+  "music": "Уверенный современный бит, деловой и светлый"
+ },
+ {
+  "week": 43,
+  "slot": "B",
+  "aud": "client",
+  "title": "Мастера рядом с домом на карте",
+  "hook": "Warum durch die halbe Stadt fahren, wenn zwei Straßen weiter jemand Gutes sitzt? Öffne die Karte in ibook und sieh die Profis um dich herum, mit Arbeiten, Preisen und Bewertungen.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "A young man walks along a sunny city street looking at his phone map, glancing up at the buildings around him, camera tracks beside him at walking pace, bright warm daylight, no text, no logos",
+    "screen": "Where do you even go?"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "The same man sits in his car stuck in slow traffic, tired face, tapping the steering wheel, city buildings sliding past the window, camera stays on him from the passenger seat, soft daylight, no text, no logos",
+    "screen": "Driving across town again"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close up of the man in a cafe holding his phone showing a city map with nearby pins, he taps one and opens a profile, coffee on the table, camera slowly pushes in, warm light, no text, no logos",
+    "screen": "See who is nearby"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The man sits in a barber chair in a small neighbourhood barbershop, the barber trims his beard, both chatting and laughing, handheld camera circles slowly around the chair, warm afternoon light, no text, no logos",
+    "screen": "Booked around the corner"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "The man steps out of the barbershop onto his own street, runs a hand through fresh hair and smiles at the camera, neighbours passing by, camera pulls back smoothly, golden evening light, no text, no logos",
+    "screen": "Free app for clients"
+   }
+  ],
+  "vo": "Warum durch die halbe Stadt fahren, wenn zwei Straßen weiter jemand Gutes sitzt? Öffne die Karte in ibook und sieh die Profis um dich herum, mit Arbeiten, Preisen und Bewertungen. Wähl eine Zeit, die dir passt, buche sie, und die Erinnerung kommt vor dem Termin. 2 Straßen statt 2 Stunden Fahrt.",
+  "cta": "Find masters near you",
+  "caption": "Gute Leute gibt es oft zwei Straßen weiter. Öffne die Karte in ibook, sieh Arbeiten, Preise und Bewertungen in deiner Nähe und buche eine Zeit, die passt. Erinnerung kommt automatisch.",
+  "tags": "#ibook #barbershop #nearme #beautyapp #bookonline #mensgrooming #haircut #cityliving #beautyappointment #localbusiness #selfcare",
+  "music": "Расслабленный городской грув с лёгким битом"
+ },
+ {
+  "week": 43,
+  "slot": "C",
+  "aud": "client",
+  "title": "Клиент: два тапа - и не забудешь запись",
+  "hook": "Termin gebucht? Zwei Berührungen und du vergisst ihn nicht mehr.",
+  "shots": [
+   {
+    "sec": "0-4",
+    "prompt": "Young woman walking down a sunny city street looks at her phone, smiles and taps the screen once, people passing behind her, camera tracks her from the front, bright daylight, no text, no logos",
+    "screen": "Two taps, zero stress"
+   },
+   {
+    "sec": "4-11",
+    "prompt": "The same woman at a cafe table with a coffee suddenly frowns as she remembers something, hand on her forehead, camera slowly pushes in, warm window light, honest everyday emotion, no text, no logos",
+    "screen": "We all forget sometimes"
+   },
+   {
+    "sec": "11-19",
+    "prompt": "Close view of her thumb tapping a small button on a phone screen, then the phone resting on the cafe table beside the cup, calm unhurried movement, camera tight on her hands, soft daylight, no text, no logos",
+    "screen": "Tap Allow for reminders"
+   },
+   {
+    "sec": "19-26",
+    "prompt": "The woman arrives at a bright nail studio right on time and is greeted warmly by the nail artist, both smiling, camera follows her through the door, clean modern interior, daylight, no text, no logos",
+    "screen": "Show up calm and on time"
+   },
+   {
+    "sec": "26-30",
+    "prompt": "Woman sits back in the studio chair with fresh nails, holding her phone loosely and smiling to herself, camera slowly pulls back through the bright room, warm daylight, no text, no logos",
+    "screen": "The app is free for you"
+   }
+  ],
+  "vo": "Termin gebucht? Zwei Berührungen und du vergisst ihn nicht mehr. Erstens: tippe auf Erlauben, wenn die App nach Mitteilungen fragt. Zweitens: lass die Buchung in deiner Liste stehen. ibook erinnert dich rechtzeitig vorher, und du kommst entspannt und pünktlich. 2 Berührungen, 0 vergessene Termine.",
+  "cta": "Get ibook, it's free for you",
+  "caption": "Mitteilungen erlauben und die Buchung in der Liste lassen. Mehr braucht es nicht. ibook erinnert dich vor dem Termin, damit du entspannt und pünktlich ankommst.",
+  "tags": "#nailsofinstagram #selfcare #beautyroutine #bookingapp #onlinebooking #nailstudio #beautyappointment #hairappointment #beautytips #selfcaretime",
+  "music": "лёгкий поп-бит, светлый и дружелюбный"
  }
 ]
