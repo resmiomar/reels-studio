@@ -46,6 +46,40 @@ VARIANTY = {
                     "acompressor=threshold=-20dB:ratio=3:attack=8:release=150:makeup=2,"
                     "loudnorm=I=-12:TP=-1.5:LRA=7,alimiter=limit=0.9:level=disabled"),
     "новая": NOVAYA,
+    # У ворот есть предел, глубже которого они не приглушают, и по умолчанию он
+    # всего минус двадцать четыре децибела. Поэтому первые ворота ничего не дали:
+    # они честно срабатывали, но опускали шум ровно до того уровня, на котором
+    # он и так был. Ставим предел глубоким и вешаем ворота В КОНЕЦ, после
+    # выравнивания громкости: тогда они смотрят на итоговый звук, а не на
+    # промежуточный, и пауза становится настоящей тишиной.
+    "ворота в конце": ("highpass=f=70,afftdn=nf=-45:nr=18,"
+                       "acompressor=threshold=-20dB:ratio=3:attack=8:release=150:makeup=2,"
+                       "loudnorm=I=-12:TP=-1.5:LRA=7,"
+                       "alimiter=limit=0.9:level=disabled,"
+                       "agate=threshold=0.02:range=0.0002:ratio=9:attack=5:release=250:knee=4"),
+    "сильнее шумодав": ("highpass=f=70,afftdn=nf=-40:nr=30,"
+                        "acompressor=threshold=-20dB:ratio=3:attack=8:release=150:makeup=2,"
+                        "loudnorm=I=-12:TP=-1.5:LRA=7,"
+                        "alimiter=limit=0.9:level=disabled,"
+                        "agate=threshold=0.02:range=0.0002:ratio=9:attack=5:release=250:knee=4"),
+    "тише на выходе": ("highpass=f=70,afftdn=nf=-40:nr=25,"
+                       "acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180:makeup=1,"
+                       "loudnorm=I=-13:TP=-1.5:LRA=8,"
+                       "alimiter=limit=0.9:level=disabled,"
+                       "agate=threshold=0.02:range=0.0002:ratio=9:attack=5:release=250:knee=4"),
+    # Пауза между фразами длится две-три десятых секунды. Ворота с закрытием в
+    # четверть секунды просто не успевают закрыться до следующего слова - шум
+    # так и звучит всю паузу. Закрываем быстрее.
+    "быстрые ворота": ("highpass=f=70,afftdn=nf=-40:nr=25,"
+                       "acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180:makeup=1,"
+                       "loudnorm=I=-13:TP=-1.5:LRA=8,"
+                       "alimiter=limit=0.9:level=disabled,"
+                       "agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3"),
+    "ворота плюс шумодав": ("highpass=f=70,afftdn=nf=-35:nr=40,"
+                            "acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180:makeup=1,"
+                            "loudnorm=I=-13:TP=-1.5:LRA=8,"
+                            "alimiter=limit=0.9:level=disabled,"
+                            "agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3"),
 }
 
 TEKST = ("Holidays are over. School starts, work starts, and suddenly everybody wants "
