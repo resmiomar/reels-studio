@@ -1,0 +1,109 @@
+# Образцы голоса ПЕРЕД тем, как собирать год.
+#
+# Прошлый раз я запустил английский год сразу и отправил в канал 28 роликов с
+# шипящим голосом. Владелец услышал это первым же ухом. Значит порядок должен
+# быть обратный: сперва пара образцов лично ему, и только потом весь год.
+#
+# Ролики уходят В ЛИЧНЫЕ СООБЩЕНИЯ, а не в канал: канал должен оставаться
+# чистым, туда попадает только принятое.
+name: Образцы голоса
+
+on:
+  workflow_dispatch:
+    inputs:
+      yazyk:
+        description: "язык"
+        default: "en"
+      nedelya:
+        description: "какую неделю собрать"
+        default: "36"
+      slot:
+        description: "слот A B или C"
+        default: "A"
+      golosa:
+        description: "какие голоса сравнить, через пробел"
+        default: "en_US-lessac-high en_GB-cori-high en_US-hfc_female-medium"
+
+jobs:
+  obrazcy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Поставить ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Поставить зависимости
+        run: pip install -q piper-tts requests httpx pillow onnxruntime unicode-rbnf sentence-stream
+
+      - name: Забрать склад
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p assets
+          gh release download sklad -D assets --clobber || echo "релиза ещё нет"
+
+      - name: Забрать голоса
+        run: |
+          mkdir -p "$HOME/uk-tts"
+          B=https://huggingface.co/rhasspy/piper-voices/resolve/main
+          for G in ${{ github.event.inputs.golosa }}; do
+            # Из имени голоса выводим путь: en_US-lessac-high -> en/en_US/lessac/high
+            L=${G%%_*}; LOC=${G%%-*}; REST=${G#*-}; NAME=${REST%-*}; Q=${REST##*-}
+            curl -sL -o "$HOME/uk-tts/$G.onnx"      "$B/$L/$LOC/$NAME/$Q/$G.onnx"
+            curl -sL -o "$HOME/uk-tts/$G.onnx.json" "$B/$L/$LOC/$NAME/$Q/$G.onnx.json"
+            echo "$G $(du -h "$HOME/uk-tts/$G.onnx" | cut -f1)"
+          done
+
+      - name: Собрать образцы и прислать владельцу
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
+          EL_KEY: ${{ secrets.EL_KEY }}
+          # Список чатов в репозиторий не кладём, поэтому адрес владельца
+          # передаём прямо: образцы должны прийти лично ему, не в канал.
+          OWNER_CHAT: "8067164700"
+        run: |
+          Y=${{ github.event.inputs.yazyk }}
+          mkdir -p out
+          for G in ${{ github.event.inputs.golosa }}; do
+            echo "=== голос $G"
+            # У каждого голоса своя рабочая папка: иначе второй подберёт чужую
+            # готовую озвучку и все образцы выйдут одинаковыми.
+            PROJECT=ibook SOURCE=year WEEK=${{ github.event.inputs.nedelya }} \
+            SLOT=${{ github.event.inputs.slot }} LANGS_ONLY=$Y KOROTKO=1 \
+            OUT_DIR=out/$G WORK=out/w-$G \
+            KADRY=assets/kadry KLIPY=assets/klipoteka \
+            VOICE_$(echo $Y | tr a-z A-Z)="piper:$G" \
+            python reel_engine.py 2>&1 | grep -E "DONE|ERR" || true
+          done
+          python - <<'PY'
+          import os, glob, sys
+          sys.path.insert(0, ".")
+          import send_batch as SB
+          chat = SB.find_chat() or int(os.environ.get("OWNER_CHAT", "0"))
+          n = 0
+          for d in sorted(glob.glob("out/*/")):
+              golos = os.path.basename(d.rstrip("/"))
+              for f in sorted(glob.glob(d + "*.mp4")):
+                  SB.send_file(chat, f, f"Образец голоса: {golos}", "document")
+                  print("отправлен", golos, os.path.basename(f), flush=True)
+                  n += 1
+          print("образцов отправлено:", n)
+          PY
+
+      - name: Сохранить
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: obrazcy
+          path: out/**/*.mp4
+          retention-days: 7
