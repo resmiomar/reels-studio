@@ -1,0 +1,127 @@
+# Проба нового движка голоса НА СЕРВЕРЕ, до того как что-то переделывать.
+#
+# Владелец забраковал все бесплатные немецкие голоса: «робот, как наркоман».
+# Он прав. Piper - модель 2023 года, она такая и есть, а хороших немецких
+# женских там просто нет: либо 16 кГц и глухо, либо начитка книг ровным тоном.
+#
+# С тех пор вышли модели другого поколения, и лицензия у них позволяет
+# коммерческое использование:
+#
+#   Chatterbox Multilingual v3   MIT, 25 языков, немецкий есть,
+#                                в слепом тесте его предпочли ElevenLabs
+#   Qwen3-TTS                    Apache 2.0, 10 языков, есть немецкий И русский
+#
+# Оба умеют говорить ГОЛОСОМ ОБРАЗЦА: даёшь десять секунд женского голоса и
+# получаешь его же на любом языке. Это и есть путь к женскому немецкому.
+#
+# Проверять надо здесь, а не на макбуке: важна скорость именно на сервере,
+# потому что весь год собирается тут, с выключенным ноутбуком владельца.
+name: Проба движка голоса
+
+on:
+  workflow_dispatch:
+    inputs:
+      dvizhok:
+        description: "chatterbox или qwen"
+        default: "chatterbox"
+      yazyk:
+        description: "код языка для движка"
+        default: "de"
+      tekst:
+        description: "что сказать"
+        default: "Der Sommer ist vorbei und plötzlich wollen alle in dieser Woche einen Termin. In ibook buchen deine Kundinnen selbst, Tag und Nacht. 30 Tage kostenlos."
+
+jobs:
+  proba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Поставить ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Поставить движок
+        run: |
+          python -m pip install -q --upgrade pip
+          if [ "${{ github.event.inputs.dvizhok }}" = "chatterbox" ]; then
+            pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+            pip install -q chatterbox-tts || pip install -q chatterbox-multilingual || \
+              pip install -q "git+https://github.com/resemble-ai/chatterbox.git"
+          else
+            pip install -q qwen-tts || pip install -q "git+https://github.com/QwenLM/Qwen3-TTS.git"
+          fi
+          pip list 2>/dev/null | grep -iE "chatterbox|qwen|torch" || true
+
+      - name: Сказать фразу и засечь время
+        env:
+          TEKST: ${{ github.event.inputs.tekst }}
+          YAZYK: ${{ github.event.inputs.yazyk }}
+          DVIZHOK: ${{ github.event.inputs.dvizhok }}
+        run: |
+          mkdir -p out
+          python - <<'PY'
+          import os, time, sys
+          tekst = os.environ["TEKST"]; lang = os.environ["YAZYK"]
+          obrazec = "obrazcy_golosa/zhenskiy.wav"      # женский голос, 10 секунд
+          t0 = time.time()
+          try:
+              if os.environ["DVIZHOK"] == "chatterbox":
+                  import torch
+                  from chatterbox.mtl_tts import ChatterboxMultilingualTTS as M
+                  m = M.from_pretrained(device="cpu")
+                  print(f"модель загружена за {time.time()-t0:.0f} сек", flush=True)
+                  t1 = time.time()
+                  wav = m.generate(tekst, language_id=lang, audio_prompt_path=obrazec)
+                  import torchaudio
+                  torchaudio.save("out/proba.wav", wav, m.sr)
+              else:
+                  from qwen_tts import QwenTTS
+                  m = QwenTTS.from_pretrained("Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice", device="cpu")
+                  print(f"модель загружена за {time.time()-t0:.0f} сек", flush=True)
+                  t1 = time.time()
+                  m.generate(tekst, ref_audio=obrazec, out_path="out/proba.wav")
+              print(f"СИНТЕЗ: {time.time()-t1:.0f} сек на {len(tekst)} знаков", flush=True)
+          except Exception as e:
+              import traceback; traceback.print_exc()
+              print("НЕ ВЫШЛО:", str(e)[:400], flush=True)
+              sys.exit(0)
+          PY
+          ls -la out/ || true
+
+      - name: Померить и прислать
+        if: always()
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          OWNER_CHAT: "8067164700"
+        run: |
+          [ -f out/proba.wav ] || { echo "звука нет, слать нечего"; exit 0; }
+          # Ту же чистку, что и на остальных языках: сравнение должно быть честным.
+          ffmpeg -y -v quiet -i out/proba.wav \
+            -af "highpass=f=70,afftdn=nf=-35:nr=20,agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3" \
+            -ar 22050 -ac 1 out/proba_chistaya.wav
+          python - <<'PY'
+          import os, sys
+          sys.path.insert(0, ".")
+          import send_batch as SB
+          chat = int(os.environ.get("OWNER_CHAT", "0"))
+          for f, p in (("out/proba.wav", "как есть"), ("out/proba_chistaya.wav", "после чистки")):
+              if os.path.exists(f):
+                  SB.send_file(chat, f, f"Проба нового движка: {p}", "audio")
+                  print("отправлено", f, flush=True)
+          PY
+
+      - name: Сохранить
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proba
+          path: out/*.wav
+          retention-days: 7
