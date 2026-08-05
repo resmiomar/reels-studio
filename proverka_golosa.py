@@ -163,7 +163,12 @@ def main():
     itog = {}
 
     # Эталон «хорошо»: голос, который владелец одобрил. Достаём из готового ролика.
-    obrazec = sorted(glob.glob(os.path.join(ARHIV, "*русский.mp4")))
+    # Имя ищем через нормализацию: внешний диск хранит «й» разложенной на «и» и
+    # значок сверху, и обычное сравнение строк такой файл не находит.
+    import unicodedata as U
+    def norm(s): return U.normalize("NFC", s)
+    obrazec = sorted(f for f in glob.glob(os.path.join(ARHIV, "*.mp4"))
+                     if "русский" in norm(os.path.basename(f)))
     if obrazec:
         w = os.path.join(RABOTA, "etalon_eleven.wav")
         if v_wav(obrazec[0], w):
