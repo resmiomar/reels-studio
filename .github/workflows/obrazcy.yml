@@ -54,7 +54,11 @@ jobs:
         run: |
           mkdir -p "$HOME/uk-tts"
           B=https://huggingface.co/rhasspy/piper-voices/resolve/main
-          for G in ${{ github.event.inputs.golosa }}; do
+          for GS in ${{ github.event.inputs.golosa }}; do
+            # У модели может быть несколько голосов внутри, тогда пишем «имя:номер».
+            # Для скачивания номер отбрасываем: файл-то один на всех.
+            G=${GS%%:*}
+            [ -f "$HOME/uk-tts/$G.onnx" ] && continue
             # Из имени голоса выводим путь: en_US-lessac-high -> en/en_US/lessac/high
             L=${G%%_*}; LOC=${G%%-*}; REST=${G#*-}; NAME=${REST%-*}; Q=${REST##*-}
             curl -sL -o "$HOME/uk-tts/$G.onnx"      "$B/$L/$LOC/$NAME/$Q/$G.onnx"
@@ -85,9 +89,11 @@ jobs:
           PEREM="VOICE_$(echo "$Y" | tr a-z A-Z)"
           for G in ${{ github.event.inputs.golosa }}; do
             echo "=== голос $G"
+            # В имени папки двоеточие не годится, заменяем на дефис.
+            PAPKA=$(echo "$G" | tr ':' '-')
             # У каждого голоса своя рабочая папка: иначе второй подберёт чужую
             # готовую озвучку и все образцы выйдут одинаковыми.
-            export OUT_DIR="out/$G" WORK="out/w-$G"
+            export OUT_DIR="out/$PAPKA" WORK="out/w-$PAPKA"
             export "$PEREM=piper:$G"
             python reel_engine.py 2>&1 | tail -25
           done
