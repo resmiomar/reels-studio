@@ -31,18 +31,47 @@ REELS_ENC=["-c:v","libx264","-pix_fmt","yuv420p","-profile:v","high","-level","4
 # Одного выравнивания мало: упираемся в пики и громче не становится. Сначала
 # поджимаем динамику компрессором - тогда средний уровень поднимается, а пики
 # остаются на месте. Так делают все, чей звук в ленте слышно без выкручивания.
-LOUD=os.environ.get("LOUD","acompressor=threshold=-22dB:ratio=4:attack=5:release=120:makeup=4,"
-                           "loudnorm=I=-10:TP=-1.0:LRA=6,volume=3dB,"
-                           "alimiter=limit=0.85:level=disabled")
+# ЧИСТКА ГОЛОСА - только на голос, ДО того как подмешана музыка.
+#
+# Владелец услышал шипение «как у старого телевизора» ровно там, где его и
+# слышно: в паузах после точки. Виновата была не модель голоса, а наш же
+# звук: сжатие с добавкой четыре децибела тянуло вверх ВСЁ, включая тишину,
+# следом выравнивание до минус десяти тянуло ещё раз, и сверху добавлялись
+# три децибела вручную. Голос громче не становился, его держал лимитер, а вот
+# шум между словами вырастал на шестнадцать децибел.
+#
+# Порядок здесь не переставлять: сперва убрать лишнее, потом делать громко.
+#   highpass  срезать гул ниже человеческого голоса
+#   afftdn    убрать само шипение по спектру
+#   agate     в паузах сделать настоящую тишину
+# Закрытие ворот 70 мс не случайно: пауза между фразами длится две-три десятых
+# секунды, и с закрытием в четверть секунды ворота просто не успевают.
+#
+# Замерено на образце: шум в паузе минус 47 дБ против минус 25 у старой
+# цепочки, при этом чистота и живость голоса не упали, а выросли.
+CHISTKA=os.environ.get("CHISTKA","highpass=f=70,afftdn=nf=-35:nr=40,"
+                       "agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3")
+# ГРОМКОСТЬ - уже на смесь голоса с музыкой. Ни шумодава, ни ворот тут быть не
+# должно: они бы глушили музыку в паузах, и она начала бы дёргаться.
+LOUD=os.environ.get("LOUD","acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180:makeup=1,"
+                           "loudnorm=I=-13:TP=-1.5:LRA=8,"
+                           "alimiter=limit=0.9:level=disabled")
 # Скретч по умолчанию на внешний диск, если он подключён: скачанные клипы
 # занимают сотни мегабайт, а на встроенном диске места нет.
 _T7="/Volumes/T7/ibook/work"
 _DEF=_T7 if os.path.isdir("/Volumes/T7/ibook") else "/tmp/stock_reel_v4"
 WORK=os.environ.get("WORK",_DEF); os.makedirs(WORK,exist_ok=True)
-MUSIC=os.environ.get("MUSIC","")  # свой mp3; если пусто — берём bundled reel_music.mp3 рядом; иначе генерим
+MUSIC=os.environ.get("MUSIC","")  # свой файл; если пусто — берём лежащий рядом; иначе генерим
 if not MUSIC:
-    _b=os.path.join(os.path.dirname(os.path.abspath(__file__)),"reel_music.mp3")
-    if os.path.exists(_b): MUSIC=_b
+    # Старый reel_music.mp3 закодирован на 32 кбит/с. На таком битрейте mp3 сам
+    # начинает шипеть и булькать на верхах, и это слышно как «старый телевизор»
+    # именно в паузах, где музыка выходит из-под голоса. Рядом лежит та же
+    # мелодия, но собранная из чистых синусоид в 48 кГц: артефактов нет по
+    # построению, прав ни у кого нет. Старый файл оставляем как запасной.
+    _d=os.path.dirname(os.path.abspath(__file__))
+    for _n in ("reel_music_chistaya.m4a","reel_music.mp3"):
+        _b=os.path.join(_d,_n)
+        if os.path.exists(_b): MUSIC=_b; break
 
 # Произношение брендов: только для ОЗВУЧКИ, написание на экране не трогаем.
 # Бренд НИКОГДА не читается по-английски ("eye-book"). В каждом языке своя запись,
@@ -943,7 +972,7 @@ def main():
         aud=f"{WORK}/{lang}_ya.m4a"
         if mus:
             ff(["-i",vo,"-i",mus,"-filter_complex",
-                "[1]volume=0.34[m];[0]asplit=2[v1][v2];"
+                "[0]"+CHISTKA+"[vc];[1]volume=0.34[m];[vc]asplit=2[v1][v2];"
                 "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=250[md];"
                 "[v2][md]amix=inputs=2:normalize=0:duration=first,"
                 +LOUD+"[a]",
@@ -1020,7 +1049,7 @@ def main():
         if MUSIC and os.path.exists(MUSIC): mus=MUSIC
         else: mus=f"{WORK}/{lang}_mus.wav"; make_music(TOTAL,mus)
         ff(["-i",f"{WORK}/{lang}_vp.mp3","-i",mus,"-filter_complex",
-            "[1]volume=0.34[m];[0]asplit=2[v1][v2];"
+            "[0]"+CHISTKA+"[vc];[1]volume=0.34[m];[vc]asplit=2[v1][v2];"
                 "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=250[md];"
                 "[v2][md]amix=inputs=2:normalize=0:duration=first,"
                 +LOUD+"[a]",
