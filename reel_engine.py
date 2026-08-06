@@ -770,8 +770,22 @@ def main():
                 _UZ=(mm,os.path.join(put,"reference_voice.wav"))
             mm,ref=_UZ
             e,n=(vid or "1.0/0.3").split("/") if "/" in (vid or "") else ("1.0","0.3")
-            w=mm.generate(text,audio_prompt_path=os.environ.get("UZ_REF",ref),
-                          exaggeration=float(e),cfg_weight=float(n))
+            # Текст режем на куски. У Chatterbox есть предел длины, и на нашем
+            # тексте в триста знаков он отдавал две секунды вместо двадцати -
+            # движок справедливо ругался «озвучка пустая». В их собственном
+            # скрипте текст тоже режется, я это упустил.
+            kuski,tek=[],""
+            for fraza in re.split(r"(?<=[.!?])\s+",text.strip()):
+                if len(tek)+len(fraza)+1>int(os.environ.get("UZ_KUSOK","200")) and tek:
+                    kuski.append(tek); tek=fraza
+                else:
+                    tek=(tek+" "+fraza).strip()
+            if tek: kuski.append(tek)
+            chasti=[]
+            for k in kuski:
+                chasti.append(mm.generate(k,audio_prompt_path=os.environ.get("UZ_REF",ref),
+                                          exaggeration=float(e),cfg_weight=float(n)))
+            w=_t.cat(chasti,dim=-1) if len(chasti)>1 else chasti[0]
             wv=mp3+".wav"; _ta.save(wv,w,mm.sr)
             ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
             return [None,None]
