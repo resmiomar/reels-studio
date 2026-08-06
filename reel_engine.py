@@ -157,10 +157,14 @@ NATIVE={
 # показал живость 3.37 при платном эталоне 4.19, у Qwen на немецком вышло
 # 4.17 при чистоте 0.744, и на своём языке хуже быть не должно.
 QWEN_GOLOS={"de":["Vivian"],"zh":["Vivian"]}
+# Узбекский: своя дообученная модель, характер задаётся «эмоция/напор».
+UZ_GOLOS={"uz":["1.0/0.3"]}
 VOICES={}
 for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     if _FORCE=="eleven":
         VOICES[_l]=[("eleven",LAURA),("eleven",BALA)]
+    elif _l in UZ_GOLOS and _FORCE not in ("chatterbox","piper"):
+        VOICES[_l]=[("uzchat",v) for v in UZ_GOLOS[_l]]
     elif _l in QWEN_GOLOS and _FORCE not in ("chatterbox","piper"):
         VOICES[_l]=[("qwen",v) for v in QWEN_GOLOS[_l]]
     elif _l in NATIVE and _FORCE!="chatterbox":
@@ -720,6 +724,55 @@ def main():
                 text=text,language=QWEN_YAZYK.get(lang,"German"),
                 speaker=vid or os.environ.get("QWEN_DIKTOR","Vivian"),instruct=ton)
             wv=mp3+".wav"; _sf.write(wv,wavs[0],sr)
+            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
+            return [None,None]
+        if engine=="uzchat":
+            # Узбекский НА СЕРВЕРЕ. Отдельная ветка, потому что узбекского нет
+            # ни у Piper, ни у Qwen, ни у обычного Chatterbox. Годится ровно
+            # одна модель: Chatterbox, дообученный на тридцати часах узбекской
+            # начитки, лицензия MIT.
+            #
+            # Две тонкости, на которых это ломалось:
+            #   - у модели СВОЙ словарь на 2454 знака против 704 у базовой,
+            #     поэтому два слоя надо растянуть перед подстановкой весов;
+            #   - азбуку тоже надо взять их, иначе модель получит номера букв
+            #     от английского алфавита и заговорит кашей.
+            #
+            # vid задаёт характер: «эмоция/напор», например «1.0/0.3».
+            import torch as _t, torchaudio as _ta, torch.nn as _nn
+            from safetensors.torch import load_file as _lf
+            global _UZ
+            try: _UZ
+            except NameError: _UZ=None
+            if _UZ is None:
+                from huggingface_hub import snapshot_download
+                from chatterbox.tts import ChatterboxTTS
+                put=snapshot_download(os.environ.get("UZ_MODEL",
+                    "Abduqayum/uzbek-tts-natural-speech-chatterbox"),
+                    allow_patterns=["*.wav","*.safetensors","*.json"])
+                mm=ChatterboxTTS.from_pretrained(device="cpu")
+                sd=_lf(os.path.join(put,"t3_finetuned_merged.safetensors"))
+                n_slov,shirina=sd["text_emb.weight"].shape
+                if mm.t3.text_emb.weight.shape[0]!=n_slov:
+                    mm.t3.text_emb=_nn.Embedding(n_slov,shirina)
+                    mm.t3.text_head=_nn.Linear(shirina,n_slov,
+                        bias=getattr(mm.t3.text_head,"bias",None) is not None)
+                    if hasattr(mm.t3,"hp") and hasattr(mm.t3.hp,"text_tokens_dict_size"):
+                        mm.t3.hp.text_tokens_dict_size=n_slov
+                mm.t3.load_state_dict(sd,strict=False)
+                try:
+                    from tokenizers import Tokenizer as _Tk
+                    uz_tk=_Tk.from_file(os.path.join(put,"tokenizer.json"))
+                    if hasattr(mm.tokenizer,"tokenizer"): mm.tokenizer.tokenizer=uz_tk
+                    else: mm.tokenizer=uz_tk
+                except Exception as e:
+                    print("узбекская азбука не встала:",str(e)[:120],flush=True)
+                _UZ=(mm,os.path.join(put,"reference_voice.wav"))
+            mm,ref=_UZ
+            e,n=(vid or "1.0/0.3").split("/") if "/" in (vid or "") else ("1.0","0.3")
+            w=mm.generate(text,audio_prompt_path=os.environ.get("UZ_REF",ref),
+                          exaggeration=float(e),cfg_weight=float(n))
+            wv=mp3+".wav"; _ta.save(wv,w,mm.sr)
             ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
             return [None,None]
         if engine=="chatterbox":
