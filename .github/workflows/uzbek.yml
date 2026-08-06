@@ -94,10 +94,40 @@ jobs:
           print(f"базовая модель загружена за {time.time()-t0:.0f} сек", flush=True)
 
           sd = load_file(str(put / "t3_finetuned_merged.safetensors"))
+
+          # У узбекской модели СВОЙ словарь: 2454 знака против 704 у базовой.
+          # Они переучили не только мозг, но и азбуку - в узбекском есть oʻ, gʻ,
+          # sh, ch, которых английская азбука не знает. Поэтому перед подстановкой
+          # весов растягиваем два слоя под новый размер, иначе torch справедливо
+          # ругается на несовпадение размеров.
+          import torch.nn as nn
+          n_slov, shirina = sd["text_emb.weight"].shape
+          if m.t3.text_emb.weight.shape[0] != n_slov:
+              print(f"словарь: было {m.t3.text_emb.weight.shape[0]}, стало {n_slov}", flush=True)
+              m.t3.text_emb = nn.Embedding(n_slov, shirina)
+              est_smeshchenie = getattr(m.t3.text_head, "bias", None) is not None
+              m.t3.text_head = nn.Linear(shirina, n_slov, bias=est_smeshchenie)
+              if hasattr(m.t3, "hp") and hasattr(m.t3.hp, "text_tokens_dict_size"):
+                  m.t3.hp.text_tokens_dict_size = n_slov
+
           r = m.t3.load_state_dict(sd, strict=False)
           print(f"узбекские веса: не хватило {len(r.missing_keys)}, лишних {len(r.unexpected_keys)}", flush=True)
           if r.missing_keys[:3]:
               print("  первые недостающие:", r.missing_keys[:3], flush=True)
+
+          # Азбуку тоже меняем на узбекскую, иначе модель получит номера букв
+          # из английской и заговорит кашей.
+          try:
+              from tokenizers import Tokenizer as _Tk
+              uz_tk = _Tk.from_file(str(put / "tokenizer.json"))
+              if hasattr(m.tokenizer, "tokenizer"):
+                  m.tokenizer.tokenizer = uz_tk
+                  print("азбука заменена на узбекскую", flush=True)
+              else:
+                  m.tokenizer = uz_tk
+                  print("азбука заменена целиком", flush=True)
+          except Exception as ex:
+              print("азбуку заменить не вышло:", str(ex)[:150], flush=True)
 
           ref = str(put / "reference_voice.wav")
           for e, n in itertools.product(emocii, napory):
