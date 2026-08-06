@@ -770,17 +770,43 @@ def main():
                 _UZ=(mm,os.path.join(put,"reference_voice.wav"))
             mm,ref=_UZ
             e,n=(vid or "1.0/0.3").split("/") if "/" in (vid or "") else ("1.0","0.3")
-            # Текст режем на куски. У Chatterbox есть предел длины, и на нашем
-            # тексте в триста знаков он отдавал две секунды вместо двадцати -
-            # движок справедливо ругался «озвучка пустая». В их собственном
-            # скрипте текст тоже режется, я это упустил.
-            kuski,tek=[],""
+            # Текст режем на куски, и мерим их В ТОКЕНАХ, а не в знаках.
+            #
+            # У Chatterbox жёсткий предел на длину входа. Сперва я резал по
+            # двумстам знакам - ролики выходили по 4-12 секунд вместо двадцати,
+            # то есть модель молча обрывала хвост. Причина в том, что узбекская
+            # азбука мелкая: на один знак приходится заметно больше токенов,
+            # чем в английской, и двести знаков уже перебор.
+            #
+            # Считаем настоящую длину той же азбукой, которой считает модель.
+            PREDEL=int(os.environ.get("UZ_TOKENOV","120"))
+            def _tok(s):
+                try:
+                    tk=getattr(mm.tokenizer,"tokenizer",mm.tokenizer)
+                    return len(tk.encode(s).ids)
+                except Exception:
+                    return len(s)//2
+            melko=[]
             for fraza in re.split(r"(?<=[.!?])\s+",text.strip()):
-                if len(tek)+len(fraza)+1>int(os.environ.get("UZ_KUSOK","200")) and tek:
+                if _tok(fraza)<=PREDEL: melko.append(fraza); continue
+                # Длинную фразу дробим по запятым, а если и это не помогло - по словам.
+                bufer=""
+                for chast in re.split(r"(?<=,)\s+",fraza):
+                    for slovo in ([chast] if _tok(chast)<=PREDEL else chast.split()):
+                        if _tok(bufer+" "+slovo)>PREDEL and bufer:
+                            melko.append(bufer.strip()); bufer=slovo
+                        else:
+                            bufer=(bufer+" "+slovo).strip()
+                if bufer: melko.append(bufer.strip())
+            kuski,tek=[],""
+            for fraza in melko:
+                if tek and _tok(tek+" "+fraza)>PREDEL:
                     kuski.append(tek); tek=fraza
                 else:
                     tek=(tek+" "+fraza).strip()
             if tek: kuski.append(tek)
+            print(f"   узбекский: {len(text)} знаков -> {len(kuski)} кусков "
+                  f"по {[_tok(k) for k in kuski]} токенов",flush=True)
             chasti=[]
             for k in kuski:
                 chasti.append(mm.generate(k,audio_prompt_path=os.environ.get("UZ_REF",ref),
