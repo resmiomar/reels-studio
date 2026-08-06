@@ -56,9 +56,16 @@ CHISTKA=os.environ.get("CHISTKA","highpass=f=70,afftdn=nf=-35:nr=20,"
                        "agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3")
 # ГРОМКОСТЬ - уже на смесь голоса с музыкой. Ни шумодава, ни ворот тут быть не
 # должно: они бы глушили музыку в паузах, и она начала бы дёргаться.
-LOUD=os.environ.get("LOUD","acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180:makeup=1,"
-                           "loudnorm=I=-13:TP=-1.5:LRA=8,"
-                           "alimiter=limit=0.9:level=disabled")
+# Громкость добавляем ПОСЛЕ выравнивания, а не целью выравнивания. Иначе
+# ограничитель пиков просто не пускает: сколько ни ставь цель минус десять,
+# на выходе всё равно минус тринадцать. Проверено: цели -13, -11 и -10 дали
+# один и тот же результат, а прибавка в 5 дБ дала минус десять с половиной -
+# ровно тот уровень, к которому владелец привык на казахском и русском.
+# Шипение при этом не возвращается: паузы уже вычищены до тишины, а тишина
+# громче не становится.
+LOUD=os.environ.get("LOUD","acompressor=threshold=-20dB:ratio=3:attack=8:release=150:makeup=2,"
+                           "loudnorm=I=-13:TP=-1.5:LRA=7,volume=5dB,"
+                           "alimiter=limit=0.95:level=disabled")
 # Скретч по умолчанию на внешний диск, если он подключён: скачанные клипы
 # занимают сотни мегабайт, а на встроенном диске места нет.
 _T7="/Volumes/T7/ibook/work"
@@ -683,7 +690,7 @@ def main():
             # Теперь порядок правильный: сперва убрать шум, потом равнять
             # громкость, и без запаса - итоговый уровень всё равно задаёт микс.
             ff(["-i",wav,"-ar","44100",
-                "-af",CHISTKA+",deesser=i=0.4:m=0.5:f=0.5,loudnorm=I=-16:TP=-2.0:LRA=9",
+                "-af",CHISTKA+",deesser=i=0.4:m=0.5:f=0.5,loudnorm=I=-14:TP=-2.0:LRA=9",
                 "-q:a","2",mp3])
             return [None,None]
         if engine=="qwen":
@@ -713,7 +720,7 @@ def main():
                 text=text,language=QWEN_YAZYK.get(lang,"German"),
                 speaker=vid or os.environ.get("QWEN_DIKTOR","Vivian"),instruct=ton)
             wv=mp3+".wav"; _sf.write(wv,wavs[0],sr)
-            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-16:TP=-2.0:LRA=9","-q:a","2",mp3])
+            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
             return [None,None]
         if engine=="chatterbox":
             # Узбекский: локальная модель (MIT), бесплатно и без лимитов.
