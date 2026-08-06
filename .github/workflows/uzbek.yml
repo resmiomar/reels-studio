@@ -74,18 +74,44 @@ jobs:
           NAPOR: ${{ github.event.inputs.napor }}
         run: |
           mkdir -p out
-          PUT=$(cat uz_put.txt)
-          for E in $EMOCII; do
-            for N in $NAPOR; do
-              echo "=== эмоция $E напор $N"
-              python "$PUT/inference.py" \
-                --text "$TEKST" \
-                --audio_prompt "$PUT/reference_voice.wav" \
-                --merged_weights "$PUT/t3_finetuned_merged.safetensors" \
-                --exaggeration "$E" --cfg_weight "$N" \
-                --output "out/e${E}_n${N}.wav" 2>&1 | tail -5
-            done
-          done
+          # Скрипт из репозитория модели запускать нельзя: он написан под свою
+          # раскладку папок и падает на «нет модуля src». Берём обычный
+          # Chatterbox и подменяем в нём мозг на узбекский - веса как раз для
+          # этого и выложены отдельным файлом.
+          python - <<'PY'
+          import os, time, itertools, torch, torchaudio
+          from pathlib import Path
+          from safetensors.torch import load_file
+          from chatterbox.tts import ChatterboxTTS
+
+          put = Path(open("uz_put.txt").read().strip())
+          tekst = os.environ["TEKST"]
+          emocii = [float(x) for x in os.environ["EMOCII"].split()]
+          napory = [float(x) for x in os.environ["NAPOR"].split()]
+
+          t0 = time.time()
+          m = ChatterboxTTS.from_pretrained(device="cpu")
+          print(f"базовая модель загружена за {time.time()-t0:.0f} сек", flush=True)
+
+          sd = load_file(str(put / "t3_finetuned_merged.safetensors"))
+          r = m.t3.load_state_dict(sd, strict=False)
+          print(f"узбекские веса: не хватило {len(r.missing_keys)}, лишних {len(r.unexpected_keys)}", flush=True)
+          if r.missing_keys[:3]:
+              print("  первые недостающие:", r.missing_keys[:3], flush=True)
+
+          ref = str(put / "reference_voice.wav")
+          for e, n in itertools.product(emocii, napory):
+              t = time.time()
+              try:
+                  wav = m.generate(tekst, audio_prompt_path=ref,
+                                   exaggeration=e, cfg_weight=n)
+                  imya = f"out/e{e}_n{n}.wav"
+                  torchaudio.save(imya, wav, m.sr)
+                  print(f"эмоция {e} напор {n}: готово за {time.time()-t:.0f} сек", flush=True)
+              except Exception as ex:
+                  import traceback; traceback.print_exc()
+                  print(f"эмоция {e} напор {n}: не вышло, {str(ex)[:200]}", flush=True)
+          PY
           ls -la out/ || true
 
       - name: Почистить, померить и прислать
