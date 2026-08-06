@@ -1,0 +1,132 @@
+# Узбекский голос: подбор напора и эмоции на сервере.
+#
+# Узбекского нет ни у Piper, ни у Qwen, ни у обычного Chatterbox. Есть одна
+# подходящая модель: Chatterbox, дообученный на тридцати часах узбекской
+# начитки. Лицензия MIT, унаследована от базового Chatterbox, коммерция
+# разрешена. Всё остальное отпало по лицензии:
+#
+#   Sayro           требует ручного одобрения, права на коммерцию неясны
+#   MMS от Facebook CC-BY-NC, коммерция запрещена
+#   OmniVoice       веса CC-BY-NC по той же причине
+#   TurkicTTS       Apache 2.0, но говорит казахским мужским голосом
+#
+# Эту модель владелец уже слышал раньше, на макбуке, и она его не устроила.
+# С тех пор появились две вещи, которых тогда не было: чистка звука и
+# понимание, что живость даёт НАПОР, а не эмоция. На немецком снижение напора
+# с 0.5 до 0.3 подняло живость с 3.7 до 4.7.
+#
+# Узбекский - единственный из оставшихся языков, который владелец понимает
+# сам. Поэтому шлём ему образцы, а не решаем за него.
+name: Узбекский голос
+
+on:
+  workflow_dispatch:
+    inputs:
+      emocii:
+        description: "эмоция через пробел"
+        default: "0.5 1.0"
+      napor:
+        description: "напор через пробел"
+        default: "0.5 0.3"
+      tekst:
+        description: "что сказать по-узбекски"
+        default: "Yoz tugadi va birdaniga hamma shu haftada navbat olmoqchi. ibook'da mijozlaringiz o'zlari band qiladi, kechayu kunduz. 30 kun bepul."
+
+jobs:
+  uzbek:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Поставить ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Поставить движок
+        run: |
+          python -m pip install -q --upgrade pip
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -q chatterbox-tts safetensors huggingface_hub numpy
+          pip install -q "git+https://github.com/resemble-ai/chatterbox.git" 2>/dev/null || true
+
+      - name: Забрать узбекскую модель
+        run: |
+          python - <<'PY'
+          from huggingface_hub import snapshot_download
+          p = snapshot_download("Abduqayum/uzbek-tts-natural-speech-chatterbox",
+                                allow_patterns=["*.py", "*.wav", "*.safetensors", "*.json"])
+          print("модель тут:", p)
+          import pathlib
+          pathlib.Path("uz_put.txt").write_text(p)
+          PY
+          cat uz_put.txt
+
+      - name: Перебрать настройки
+        env:
+          TEKST: ${{ github.event.inputs.tekst }}
+          EMOCII: ${{ github.event.inputs.emocii }}
+          NAPOR: ${{ github.event.inputs.napor }}
+        run: |
+          mkdir -p out
+          PUT=$(cat uz_put.txt)
+          for E in $EMOCII; do
+            for N in $NAPOR; do
+              echo "=== эмоция $E напор $N"
+              python "$PUT/inference.py" \
+                --text "$TEKST" \
+                --audio_prompt "$PUT/reference_voice.wav" \
+                --merged_weights "$PUT/t3_finetuned_merged.safetensors" \
+                --exaggeration "$E" --cfg_weight "$N" \
+                --output "out/e${E}_n${N}.wav" 2>&1 | tail -5
+            done
+          done
+          ls -la out/ || true
+
+      - name: Почистить, померить и прислать
+        if: always()
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TG_TOKEN }}
+          OWNER_CHAT: "8067164700"
+        run: |
+          for F in out/*.wav; do
+            [ -f "$F" ] || continue
+            # Та же чистка, что у всех остальных языков.
+            ffmpeg -y -v quiet -i "$F" \
+              -af "highpass=f=70,afftdn=nf=-35:nr=20,agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3" \
+              -ar 22050 -ac 1 "${F%.wav}_c.wav"
+          done
+          python - <<'PY'
+          import os, sys, glob, subprocess
+          sys.path.insert(0, ".")
+          import proverka_golosa as P
+          import send_batch as SB
+          itog = []
+          for f in sorted(glob.glob("out/*_c.wav")):
+              w = f.replace(".wav", "_16.wav")
+              subprocess.run(["ffmpeg","-y","-v","quiet","-i",f,"-ar","16000","-ac","1",w],check=False)
+              m = P.mera(w, 120)
+              if m:
+                  itog.append((m["размах"], m["чистота"], f))
+                  print(f"{os.path.basename(f):22} живость {m['размах']:.2f}  чистота {m['чистота']:.3f}  шум {m['фон']}", flush=True)
+          itog.sort(reverse=True)
+          print("\nэталоны: робот 2.66 | платный одобренный 4.19", flush=True)
+          chat = int(os.environ.get("OWNER_CHAT", "0"))
+          for zh, ch, f in itog[:3]:
+              SB.send_file(chat, f, f"Узбекский. Харизма {zh:.2f} (эталон 4.19), чистота {ch:.3f}", "audio")
+              print("отправлено", f, flush=True)
+          PY
+
+      - name: Сохранить
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uzbek
+          path: out/*.wav
+          retention-days: 7
