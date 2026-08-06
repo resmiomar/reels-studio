@@ -56,9 +56,16 @@ CHISTKA=os.environ.get("CHISTKA","highpass=f=70,afftdn=nf=-35:nr=20,"
                        "agate=threshold=0.03:range=0.0002:ratio=9:attack=4:release=70:knee=3")
 # ГРОМКОСТЬ - уже на смесь голоса с музыкой. Ни шумодава, ни ворот тут быть не
 # должно: они бы глушили музыку в паузах, и она начала бы дёргаться.
-LOUD=os.environ.get("LOUD","acompressor=threshold=-18dB:ratio=2.5:attack=10:release=180:makeup=1,"
-                           "loudnorm=I=-13:TP=-1.5:LRA=8,"
-                           "alimiter=limit=0.9:level=disabled")
+# Громкость добавляем ПОСЛЕ выравнивания, а не целью выравнивания. Иначе
+# ограничитель пиков просто не пускает: сколько ни ставь цель минус десять,
+# на выходе всё равно минус тринадцать. Проверено: цели -13, -11 и -10 дали
+# один и тот же результат, а прибавка в 5 дБ дала минус десять с половиной -
+# ровно тот уровень, к которому владелец привык на казахском и русском.
+# Шипение при этом не возвращается: паузы уже вычищены до тишины, а тишина
+# громче не становится.
+LOUD=os.environ.get("LOUD","acompressor=threshold=-20dB:ratio=3:attack=8:release=150:makeup=2,"
+                           "loudnorm=I=-13:TP=-1.5:LRA=7,volume=5dB,"
+                           "alimiter=limit=0.95:level=disabled")
 # Скретч по умолчанию на внешний диск, если он подключён: скачанные клипы
 # занимают сотни мегабайт, а на встроенном диске места нет.
 _T7="/Volumes/T7/ibook/work"
@@ -146,11 +153,18 @@ NATIVE={
 # Языки, которые говорит Qwen. У Piper немецкого женского нормального нет
 # вовсе: либо 16 кГц и глухо, либо начитка книг ровным тоном, и владелец
 # забраковал их все. Qwen дал чистоту 0.744 - выше и Piper, и платного голоса.
-QWEN_GOLOS={"de":["Vivian"]}
+# Китайский - родной язык этой модели, она китайская. У Piper китайский
+# показал живость 3.37 при платном эталоне 4.19, у Qwen на немецком вышло
+# 4.17 при чистоте 0.744, и на своём языке хуже быть не должно.
+QWEN_GOLOS={"de":["Vivian"],"zh":["Vivian"]}
+# Узбекский: своя дообученная модель, характер задаётся «эмоция/напор».
+UZ_GOLOS={"uz":["1.0/0.3"]}
 VOICES={}
 for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     if _FORCE=="eleven":
         VOICES[_l]=[("eleven",LAURA),("eleven",BALA)]
+    elif _l in UZ_GOLOS and _FORCE not in ("chatterbox","piper"):
+        VOICES[_l]=[("uzchat",v) for v in UZ_GOLOS[_l]]
     elif _l in QWEN_GOLOS and _FORCE not in ("chatterbox","piper"):
         VOICES[_l]=[("qwen",v) for v in QWEN_GOLOS[_l]]
     elif _l in NATIVE and _FORCE!="chatterbox":
@@ -680,7 +694,7 @@ def main():
             # Теперь порядок правильный: сперва убрать шум, потом равнять
             # громкость, и без запаса - итоговый уровень всё равно задаёт микс.
             ff(["-i",wav,"-ar","44100",
-                "-af",CHISTKA+",deesser=i=0.4:m=0.5:f=0.5,loudnorm=I=-16:TP=-2.0:LRA=9",
+                "-af",CHISTKA+",deesser=i=0.4:m=0.5:f=0.5,loudnorm=I=-14:TP=-2.0:LRA=9",
                 "-q:a","2",mp3])
             return [None,None]
         if engine=="qwen":
@@ -710,7 +724,56 @@ def main():
                 text=text,language=QWEN_YAZYK.get(lang,"German"),
                 speaker=vid or os.environ.get("QWEN_DIKTOR","Vivian"),instruct=ton)
             wv=mp3+".wav"; _sf.write(wv,wavs[0],sr)
-            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-16:TP=-2.0:LRA=9","-q:a","2",mp3])
+            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
+            return [None,None]
+        if engine=="uzchat":
+            # Узбекский НА СЕРВЕРЕ. Отдельная ветка, потому что узбекского нет
+            # ни у Piper, ни у Qwen, ни у обычного Chatterbox. Годится ровно
+            # одна модель: Chatterbox, дообученный на тридцати часах узбекской
+            # начитки, лицензия MIT.
+            #
+            # Две тонкости, на которых это ломалось:
+            #   - у модели СВОЙ словарь на 2454 знака против 704 у базовой,
+            #     поэтому два слоя надо растянуть перед подстановкой весов;
+            #   - азбуку тоже надо взять их, иначе модель получит номера букв
+            #     от английского алфавита и заговорит кашей.
+            #
+            # vid задаёт характер: «эмоция/напор», например «1.0/0.3».
+            import torch as _t, torchaudio as _ta, torch.nn as _nn
+            from safetensors.torch import load_file as _lf
+            global _UZ
+            try: _UZ
+            except NameError: _UZ=None
+            if _UZ is None:
+                from huggingface_hub import snapshot_download
+                from chatterbox.tts import ChatterboxTTS
+                put=snapshot_download(os.environ.get("UZ_MODEL",
+                    "Abduqayum/uzbek-tts-natural-speech-chatterbox"),
+                    allow_patterns=["*.wav","*.safetensors","*.json"])
+                mm=ChatterboxTTS.from_pretrained(device="cpu")
+                sd=_lf(os.path.join(put,"t3_finetuned_merged.safetensors"))
+                n_slov,shirina=sd["text_emb.weight"].shape
+                if mm.t3.text_emb.weight.shape[0]!=n_slov:
+                    mm.t3.text_emb=_nn.Embedding(n_slov,shirina)
+                    mm.t3.text_head=_nn.Linear(shirina,n_slov,
+                        bias=getattr(mm.t3.text_head,"bias",None) is not None)
+                    if hasattr(mm.t3,"hp") and hasattr(mm.t3.hp,"text_tokens_dict_size"):
+                        mm.t3.hp.text_tokens_dict_size=n_slov
+                mm.t3.load_state_dict(sd,strict=False)
+                try:
+                    from tokenizers import Tokenizer as _Tk
+                    uz_tk=_Tk.from_file(os.path.join(put,"tokenizer.json"))
+                    if hasattr(mm.tokenizer,"tokenizer"): mm.tokenizer.tokenizer=uz_tk
+                    else: mm.tokenizer=uz_tk
+                except Exception as e:
+                    print("узбекская азбука не встала:",str(e)[:120],flush=True)
+                _UZ=(mm,os.path.join(put,"reference_voice.wav"))
+            mm,ref=_UZ
+            e,n=(vid or "1.0/0.3").split("/") if "/" in (vid or "") else ("1.0","0.3")
+            w=mm.generate(text,audio_prompt_path=os.environ.get("UZ_REF",ref),
+                          exaggeration=float(e),cfg_weight=float(n))
+            wv=mp3+".wav"; _ta.save(wv,w,mm.sr)
+            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
             return [None,None]
         if engine=="chatterbox":
             # Узбекский: локальная модель (MIT), бесплатно и без лимитов.
