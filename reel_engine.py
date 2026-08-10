@@ -156,13 +156,20 @@ NATIVE={
 # Китайский - родной язык этой модели, она китайская. У Piper китайский
 # показал живость 3.37 при платном эталоне 4.19, у Qwen на немецком вышло
 # 4.17 при чистоте 0.744, и на своём языке хуже быть не должно.
-QWEN_GOLOS={"de":["Vivian"],"zh":["Vivian"]}
+# Русский для России пробуем на Qwen: если выйдет не хуже платного, подписка
+# в 22 доллара станет не нужна совсем.
+QWEN_GOLOS={"de":["Vivian"],"zh":["Vivian"],"rf":["Vivian"]}
+# Турецкий: Qwen его не знает, у Piper он один и средний. Chatterbox знает
+# турецкий официально, лицензия MIT.
+MCHAT_GOLOS={"tr":["1.0/0.3"]}
 # Узбекский: своя дообученная модель, характер задаётся «эмоция/напор».
 UZ_GOLOS={"uz":["1.0/0.3"]}
 VOICES={}
 for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     if _FORCE=="eleven":
         VOICES[_l]=[("eleven",LAURA),("eleven",BALA)]
+    elif _l in MCHAT_GOLOS and _FORCE not in ("chatterbox","piper"):
+        VOICES[_l]=[("mchat",v) for v in MCHAT_GOLOS[_l]]
     elif _l in UZ_GOLOS and _FORCE not in ("chatterbox","piper"):
         VOICES[_l]=[("uzchat",v) for v in UZ_GOLOS[_l]]
     elif _l in QWEN_GOLOS and _FORCE not in ("chatterbox","piper"):
@@ -407,6 +414,42 @@ else:
 # LANGS_ONLY="kk" или список "kk,ru,de" — иначе рендерим все языки проекта
 _only=[x.strip() for x in os.environ.get("LANGS_ONLY","").split(",") if x.strip()]
 if _only: LANGS={l:LANGS[l] for l in _only if l in LANGS}
+
+def rezat_tekst(text, model, predel=None):
+    """Разрезать текст на куски, влезающие в модель, и мерить В ТОКЕНАХ.
+
+    У Chatterbox жёсткий предел длины входа. Резать по знакам нельзя: у разных
+    азбук число токенов на знак отличается вдвое, и узбекский на двухстах
+    знаках отдавал четыре секунды вместо двадцати, молча обрывая хвост.
+    """
+    predel=predel or int(os.environ.get("CHAT_TOKENOV","120"))
+    def tok(s):
+        try:
+            tk=getattr(model.tokenizer,"tokenizer",model.tokenizer)
+            return len(tk.encode(s).ids)
+        except Exception:
+            return len(s)//2
+    melko=[]
+    for fraza in re.split(r"(?<=[.!?])\s+|(?<=[。！？；])",(text or "").strip()):
+        if not fraza: continue
+        if tok(fraza)<=predel: melko.append(fraza); continue
+        bufer=""
+        for chast in re.split(r"(?<=,)\s+",fraza):
+            for slovo in ([chast] if tok(chast)<=predel else chast.split()):
+                if bufer and tok(bufer+" "+slovo)>predel:
+                    melko.append(bufer.strip()); bufer=slovo
+                else:
+                    bufer=(bufer+" "+slovo).strip()
+        if bufer: melko.append(bufer.strip())
+    kuski,tek=[],""
+    for fraza in melko:
+        if tek and tok(tek+" "+fraza)>predel:
+            kuski.append(tek); tek=fraza
+        else:
+            tek=(tek+" "+fraza).strip()
+    if tek: kuski.append(tek)
+    return kuski or [text]
+
 
 def api(u):
     # Сток отвечает 429 «слишком часто», когда параллельных сборок много.
@@ -726,6 +769,28 @@ def main():
             wv=mp3+".wav"; _sf.write(wv,wavs[0],sr)
             ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
             return [None,None]
+        if engine=="mchat":
+            # Chatterbox Multilingual: 23 языка, лицензия MIT. Нужен там, где
+            # ни Piper, ни Qwen языка не знают или знают плохо. Турецкий у него
+            # официально в списке, в отличие от Qwen.
+            # vid задаёт характер: «эмоция/напор», например «1.0/0.3».
+            import torch as _t, torchaudio as _ta
+            global _MCH
+            try: _MCH
+            except NameError: _MCH=None
+            if _MCH is None:
+                from chatterbox.mtl_tts import ChatterboxMultilingualTTS as _M
+                _MCH=_M.from_pretrained(device="cpu")
+            e,n=(vid or "1.0/0.3").split("/") if "/" in (vid or "") else ("1.0","0.3")
+            obr=os.environ.get("MCHAT_REF",os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),"obrazcy_golosa","zhenskiy.wav"))
+            chasti=[_MCH.generate(k,language_id=lang,audio_prompt_path=obr,
+                                  exaggeration=float(e),cfg_weight=float(n))
+                    for k in rezat_tekst(text,_MCH)]
+            w=_t.cat(chasti,dim=-1) if len(chasti)>1 else chasti[0]
+            wv=mp3+".wav"; _ta.save(wv,w,_MCH.sr)
+            ff(["-i",wv,"-af",CHISTKA+",loudnorm=I=-14:TP=-2.0:LRA=9","-q:a","2",mp3])
+            return [None,None]
         if engine=="uzchat":
             # Узбекский НА СЕРВЕРЕ. Отдельная ветка, потому что узбекского нет
             # ни у Piper, ни у Qwen, ни у обычного Chatterbox. Годится ровно
@@ -770,43 +835,7 @@ def main():
                 _UZ=(mm,os.path.join(put,"reference_voice.wav"))
             mm,ref=_UZ
             e,n=(vid or "1.0/0.3").split("/") if "/" in (vid or "") else ("1.0","0.3")
-            # Текст режем на куски, и мерим их В ТОКЕНАХ, а не в знаках.
-            #
-            # У Chatterbox жёсткий предел на длину входа. Сперва я резал по
-            # двумстам знакам - ролики выходили по 4-12 секунд вместо двадцати,
-            # то есть модель молча обрывала хвост. Причина в том, что узбекская
-            # азбука мелкая: на один знак приходится заметно больше токенов,
-            # чем в английской, и двести знаков уже перебор.
-            #
-            # Считаем настоящую длину той же азбукой, которой считает модель.
-            PREDEL=int(os.environ.get("UZ_TOKENOV","120"))
-            def _tok(s):
-                try:
-                    tk=getattr(mm.tokenizer,"tokenizer",mm.tokenizer)
-                    return len(tk.encode(s).ids)
-                except Exception:
-                    return len(s)//2
-            melko=[]
-            for fraza in re.split(r"(?<=[.!?])\s+",text.strip()):
-                if _tok(fraza)<=PREDEL: melko.append(fraza); continue
-                # Длинную фразу дробим по запятым, а если и это не помогло - по словам.
-                bufer=""
-                for chast in re.split(r"(?<=,)\s+",fraza):
-                    for slovo in ([chast] if _tok(chast)<=PREDEL else chast.split()):
-                        if _tok(bufer+" "+slovo)>PREDEL and bufer:
-                            melko.append(bufer.strip()); bufer=slovo
-                        else:
-                            bufer=(bufer+" "+slovo).strip()
-                if bufer: melko.append(bufer.strip())
-            kuski,tek=[],""
-            for fraza in melko:
-                if tek and _tok(tek+" "+fraza)>PREDEL:
-                    kuski.append(tek); tek=fraza
-                else:
-                    tek=(tek+" "+fraza).strip()
-            if tek: kuski.append(tek)
-            print(f"   узбекский: {len(text)} знаков -> {len(kuski)} кусков "
-                  f"по {[_tok(k) for k in kuski]} токенов",flush=True)
+            kuski=rezat_tekst(text,mm)
             chasti=[]
             for k in kuski:
                 chasti.append(mm.generate(k,audio_prompt_path=os.environ.get("UZ_REF",ref),
