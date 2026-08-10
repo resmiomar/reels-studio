@@ -48,7 +48,7 @@ jobs:
           case "${{ github.event.inputs.yazyk }}" in
             uz) pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
                 pip install -q chatterbox-tts safetensors huggingface_hub ;;
-            de|zh) pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+            de|zh|ru|rf) pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
                 pip install -q soundfile qwen-tts ;;
           esac
 
@@ -66,7 +66,7 @@ jobs:
           # У узбекского, немецкого и китайского голос качает сам движок с
           # другого склада. Имена там не в формате Piper, и разбор пути на них
           # ломается - поэтому этот шаг для них просто пропускаем.
-          case "${{ github.event.inputs.yazyk }}" in uz|de|zh) echo "голос качает движок"; exit 0 ;; esac
+          case "${{ github.event.inputs.yazyk }}" in uz|de|zh|ru|rf) echo "голос качает движок"; exit 0 ;; esac
           for GS in ${{ github.event.inputs.golosa }}; do
             # У модели может быть несколько голосов внутри, тогда пишем «имя:номер».
             # Для скачивания номер отбрасываем: файл-то один на всех.
@@ -104,7 +104,7 @@ jobs:
           # и узбекский с немецким молча уходили не туда.
           case "$Y" in
             uz)    DVIZHOK=uzchat ;;
-            de|zh) DVIZHOK=qwen ;;
+            de|zh|ru|rf) DVIZHOK=qwen ;;
             *)     DVIZHOK=piper ;;
           esac
           for G in ${{ github.event.inputs.golosa }}; do
