@@ -1151,9 +1151,16 @@ def main():
         mus=MUSIC if (MUSIC and os.path.exists(MUSIC)) else None
         aud=f"{WORK}/{lang}_ya.m4a"
         if mus:
+            # Музыка тише и возвращается МЕДЛЕННО. Владелец слышал «шум после
+            # точки» - это она выныривала из-под голоса в каждой паузе.
+            # Голос там уже чистый, ворота дают минус девяносто пять децибел,
+            # так что виновата была именно музыка. Замерено: 0.34 с возвратом
+            # 250 мс дают в паузе минус девятнадцать децибел, 0.22 с возвратом
+            # 700 мс - минус тридцать один. Медленный возврат означает, что в
+            # коротких паузах музыка просто не успевает подняться.
             ff(["-i",vo,"-i",mus,"-filter_complex",
-                "[0]"+CHISTKA+"[vc];[1]volume=0.34[m];[vc]asplit=2[v1][v2];"
-                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=250[md];"
+                "[0]"+CHISTKA+"[vc];[1]volume=0.22[m];[vc]asplit=2[v1][v2];"
+                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=700[md];"
                 "[v2][md]amix=inputs=2:normalize=0:duration=first,"
                 +LOUD+"[a]",
                 "-map","[a]","-t",f"{TOTAL:.2f}",aud])
@@ -1229,8 +1236,8 @@ def main():
         if MUSIC and os.path.exists(MUSIC): mus=MUSIC
         else: mus=f"{WORK}/{lang}_mus.wav"; make_music(TOTAL,mus)
         ff(["-i",f"{WORK}/{lang}_vp.mp3","-i",mus,"-filter_complex",
-            "[0]"+CHISTKA+"[vc];[1]volume=0.34[m];[vc]asplit=2[v1][v2];"
-                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=250[md];"
+            "[0]"+CHISTKA+"[vc];[1]volume=0.22[m];[vc]asplit=2[v1][v2];"
+                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=700[md];"
                 "[v2][md]amix=inputs=2:normalize=0:duration=first,"
                 +LOUD+"[a]",
             "-map","[a]","-t",f"{TOTAL:.2f}",f"{WORK}/{lang}_aud.m4a"])
