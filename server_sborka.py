@@ -66,6 +66,13 @@ def nomer(week, slot):
     return (int(week) - 1) * 3 + "ABC".index(slot) + 1
 
 
+# Пересборка: собрать заново то, что уже в канале, и НЕ слать повторно.
+# Нужна, когда поменялся звук: старые ролики остаются на месте, новые ложатся
+# на диск, и владелец сам решает, менять ли содержимое каналов.
+PERESBORKA = os.environ.get("PERESBORKA") == "1"
+NE_SLAT = os.environ.get("NE_SLAT") == "1"
+
+
 def uzhe_otpravlen(week, slot):
     """Проверка ДО сборки, а не после отправки.
 
@@ -74,6 +81,8 @@ def uzhe_otpravlen(week, slot):
     русского - сгоревшая платная озвучка: пятнадцать роликов съели квоту,
     хотя они уже лежали в канале.
     """
+    if PERESBORKA:
+        return False
     try:
         return nomer(week, slot) in json.load(
             open(os.path.join(HERE, "otpravleno.json"), encoding="utf-8")).get(YAZYK, [])
@@ -137,7 +146,9 @@ def main():
         break
     print(f"собрано роликов: {n}")
     # Отправляем сразу из сервера: тогда владельцу вообще ничего делать не надо.
-    if os.environ.get("TG_TOKEN"):
+    if NE_SLAT:
+        print("пересборка: в каналы не отправляю, ролики лежат в артефакте")
+    elif os.environ.get("TG_TOKEN"):
         os.environ["BOT_TOKEN"] = os.environ["TG_TOKEN"]
         try:
             import kanaly
