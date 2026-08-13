@@ -143,4 +143,6 @@ jobs:
         with:
           name: obrazcy
           path: out/**/*.mp4
-          retention-days: 7
+          # 90 дней, а не 7. На семи днях немецкий и китайский год
+          # стёрлись раньше, чем я успел снять копию на диск.
+          retention-days: 90
