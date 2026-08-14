@@ -459,13 +459,17 @@ def api(u):
     # Сток отвечает 429 «слишком часто», когда параллельных сборок много.
     # Одна такая ошибка роняла ролик целиком: девять прогонов разом потеряли
     # двадцать один. Ждём и повторяем - минута ожидания дешевле пересборки.
-    for popytka in range(4):
+    # Ждём ДОЛГО и с разбросом. Четырёх попыток по пятнадцать секунд хватало
+    # на три потока, но на двенадцати сток отшил почти всех: из шестисот
+    # двадцати четырёх роликов собралось сто шестьдесят один. Разброс нужен,
+    # чтобы потоки не били в источник в одну и ту же секунду.
+    for popytka in range(6):
         try:
             return json.load(urllib.request.urlopen(
-                urllib.request.Request(u,headers={"Authorization":KEY,"User-Agent":UA}),timeout=20))
+                urllib.request.Request(u,headers={"Authorization":KEY,"User-Agent":UA}),timeout=30))
         except urllib.error.HTTPError as e:
-            if e.code not in (429,500,502,503,504) or popytka==3: raise
-            time.sleep(15*(popytka+1))
+            if e.code not in (429,500,502,503,504) or popytka==5: raise
+            time.sleep(20*(popytka+1)+random.uniform(0,15))
 # ПАМЯТЬ ИСПОЛЬЗОВАННЫХ КЛИПОВ МЕЖДУ ЗАПУСКАМИ.
 # Каждый ролик рендерится отдельным процессом, поэтому множество used обнулялось,
 # и на один и тот же запрос сток отдавал ТОТ ЖЕ первый клип. Из 8 роликов выходило
