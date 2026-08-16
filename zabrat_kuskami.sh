@@ -63,7 +63,12 @@ except Exception: print('')" 2>/dev/null)
     fi
 
     # Просим остаток и ДОПИСЫВАЕМ. Обнулить файл этот вызов не может.
-    curl -s --max-time 900 -H "Range: bytes=${SKACHANO}-" "$SSYLKA" >> "$ZIP"
+    # --speed-time/--speed-limit обрывают мёртвое соединение за полминуты.
+    # Без них curl честно висел ПЯТНАДЦАТЬ минут на соединении, которое не
+    # отдавало ни байта, и круги стояли на месте. Лучше быстро оборвать и
+    # взять свежую ссылку: она всё равно одноразовая.
+    curl -s --max-time 300 --speed-time 30 --speed-limit 10000 \
+         -H "Range: bytes=${SKACHANO}-" "$SSYLKA" >> "$ZIP"
     STALO=$(stat -f%z "$ZIP" 2>/dev/null || echo 0)
     echo "$ID ($L): круг $k, $((STALO/1048576)) из $((VSEGO/1048576)) МБ"
 
