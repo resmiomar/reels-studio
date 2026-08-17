@@ -1195,7 +1195,12 @@ def main():
                 parts.append(f"{prev}[v{i}]xfade=transition=fade:duration={XF}:offset={off:.3f}{out}")
                 prev=out; acc=acc+keep[i]-XF
             # мягкий вход и выход всего ролика, внутри - только наплывы
-            parts.append(f"[xf]fade=t=in:st=0:d=0.3,fade=t=out:st={max(0,TOTAL-0.4):.2f}:d=0.4{tag}")
+            # ВХОД БЕЗ ЗАТЕМНЕНИЯ. Instagram и TikTok берут обложкой первый
+            # кадр ролика, а он при затемнении чёрный: замерено, яркость ноль.
+            # В ленте это выглядит как пустой квадрат, и ролик просто не
+            # открывают. Выход из ролика затемняем как прежде, он обложкой не
+            # становится.
+            parts.append(f"[xf]fade=t=out:st={max(0,TOTAL-0.4):.2f}:d=0.4{tag}")
         if CTA_CARD:   # плашка «скачай» держится последние 4 секунды
             parts.append(f"[vc][{CI}:v]overlay=0:0:enable='between(t,{max(0,TOTAL-4):.2f},{TOTAL:.2f})'[v]")
         open(f"{WORK}/{lang}_yfg.txt","w").write(";".join(parts))
@@ -1253,7 +1258,10 @@ def main():
             st=0.4; Di=D[i]
             parts.append(f"[{i}:v]trim={st}:{st+Di:.3f},setpts=PTS-STARTPTS,"
                 f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30,format=yuv420p,"
-                f"fade=t=in:st=0:d={fd},fade=t=out:st={max(0,Di-fd):.3f}:d={fd}[v{i}]")
+                # У первого кадра ролика входа из черноты быть не должно:
+                # он идёт на обложку. У остальных вход оставляем, это склейка.
+                + (f"fade=t=out:st={max(0,Di-fd):.3f}:d={fd}[v{i}]" if i==0 else
+                   f"fade=t=in:st=0:d={fd},fade=t=out:st={max(0,Di-fd):.3f}:d={fd}[v{i}]"))
         parts.append("".join(f"[v{i}]" for i in range(N))+f"concat=n={N}:v=1:a=0[v]")
         open(f"{WORK}/{lang}_fg.txt","w").write(";".join(parts))
         try:
