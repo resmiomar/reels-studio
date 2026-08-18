@@ -108,7 +108,13 @@ def sobrat(week, slot):
         env["VOICE_" + YAZYK.upper()] = "eleven:xKWShjEXraJurmIX5TZM"
     # Языки, которым нужна только локальная тяжёлая модель, на сервере не берём:
     # лучше честно пропустить, чем собрать пятнадцать пустых роликов.
-    if YAZYK in ("uz", "tr", "it") and not os.path.isdir(os.path.expanduser("~/uz-tts")):
+    #
+    # Узбекский из этого списка ушёл. Он был здесь, пока говорил дообученным
+    # Chatterbox: тот весит гигабайты и на сервер не влезал. Владелец эту
+    # озвучку забраковал - язык он понимает и слышал обрубки и сбитые ударения.
+    # Теперь узбекский говорит нейроголосом Microsoft: модель не качается
+    # вовсе, синтез идёт по сети, серверу это по силам как и любой запрос.
+    if YAZYK in ("tr", "it") and not os.path.isdir(os.path.expanduser("~/uz-tts")):
         print(f"  {week}{slot}: язык {YAZYK} на сервере не собирается, нужен Mac", flush=True)
         return False
     r = subprocess.run([sys.executable, os.path.join(HERE, "reel_engine.py")],
