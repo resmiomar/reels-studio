@@ -158,12 +158,23 @@ NATIVE={
 # 4.17 при чистоте 0.744, и на своём языке хуже быть не должно.
 # Русский для России пробуем на Qwen: если выйдет не хуже платного, подписка
 # в 22 доллара станет не нужна совсем.
-QWEN_GOLOS={"de":["Vivian"],"zh":["Vivian"],"rf":["Vivian"]}
+# Французский, итальянский и испанский - официальные языки Qwen, как немецкий
+# с китайским, которые владелец принял. У этих языков в открытом доступе тысячи
+# часов записей, поэтому качество там ожидается такое же, а не как у узбекского.
+QWEN_GOLOS={"de":["Vivian"],"zh":["Vivian"],"rf":["Vivian"],
+            "fr":["Vivian"],"it":["Vivian"],"es":["Vivian"]}
 # Турецкий: Qwen его не знает, у Piper он один и средний. Chatterbox знает
 # турецкий официально, лицензия MIT.
 MCHAT_GOLOS={"tr":["1.0/0.3"]}
-# Узбекский: своя дообученная модель, характер задаётся «эмоция/напор».
-UZ_GOLOS={"uz":["1.0/0.3"]}
+# Узбекский. Дообученную модель владелец забраковал, и правильно: он этот язык
+# понимает, а она читала обрубками по четыре секунды и путала ударения.
+# Причина простая - узбекского в открытых наборах почти нет, дообучать не на чем.
+# ElevenLabs узбекский не знает НИ В ОДНОЙ модели: ни eleven_v3 с 74 языками,
+# ни multilingual_v2 с 29. Проверено запросом к /v1/models, узбекского в списке
+# нет. Значит платная подписка тут бесполезна, деньги её не решают.
+# Зато у Microsoft есть родной узбекский нейроголос, и он бесплатный.
+# Женский, как и просил владелец для остальных языков.
+UZ_GOLOS={"uz":["uz-UZ-MadinaNeural"]}
 VOICES={}
 for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     if _FORCE=="eleven":
@@ -171,7 +182,7 @@ for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     elif _l in MCHAT_GOLOS and _FORCE not in ("chatterbox","piper"):
         VOICES[_l]=[("mchat",v) for v in MCHAT_GOLOS[_l]]
     elif _l in UZ_GOLOS and _FORCE not in ("chatterbox","piper"):
-        VOICES[_l]=[("uzchat",v) for v in UZ_GOLOS[_l]]
+        VOICES[_l]=[("edge",v) for v in UZ_GOLOS[_l]]
     elif _l in QWEN_GOLOS and _FORCE not in ("chatterbox","piper"):
         VOICES[_l]=[("qwen",v) for v in QWEN_GOLOS[_l]]
     elif _l in NATIVE and _FORCE!="chatterbox":
@@ -455,13 +466,17 @@ def api(u):
     # Сток отвечает 429 «слишком часто», когда параллельных сборок много.
     # Одна такая ошибка роняла ролик целиком: девять прогонов разом потеряли
     # двадцать один. Ждём и повторяем - минута ожидания дешевле пересборки.
-    for popytka in range(4):
+    # Ждём ДОЛГО и с разбросом. Четырёх попыток по пятнадцать секунд хватало
+    # на три потока, но на двенадцати сток отшил почти всех: из шестисот
+    # двадцати четырёх роликов собралось сто шестьдесят один. Разброс нужен,
+    # чтобы потоки не били в источник в одну и ту же секунду.
+    for popytka in range(6):
         try:
             return json.load(urllib.request.urlopen(
-                urllib.request.Request(u,headers={"Authorization":KEY,"User-Agent":UA}),timeout=20))
+                urllib.request.Request(u,headers={"Authorization":KEY,"User-Agent":UA}),timeout=30))
         except urllib.error.HTTPError as e:
-            if e.code not in (429,500,502,503,504) or popytka==3: raise
-            time.sleep(15*(popytka+1))
+            if e.code not in (429,500,502,503,504) or popytka==5: raise
+            time.sleep(20*(popytka+1)+random.uniform(0,15))
 # ПАМЯТЬ ИСПОЛЬЗОВАННЫХ КЛИПОВ МЕЖДУ ЗАПУСКАМИ.
 # Каждый ролик рендерится отдельным процессом, поэтому множество used обнулялось,
 # и на один и тот же запрос сток отдавал ТОТ ЖЕ первый клип. Из 8 роликов выходило
@@ -1147,9 +1162,16 @@ def main():
         mus=MUSIC if (MUSIC and os.path.exists(MUSIC)) else None
         aud=f"{WORK}/{lang}_ya.m4a"
         if mus:
+            # Музыка тише и возвращается МЕДЛЕННО. Владелец слышал «шум после
+            # точки» - это она выныривала из-под голоса в каждой паузе.
+            # Голос там уже чистый, ворота дают минус девяносто пять децибел,
+            # так что виновата была именно музыка. Замерено: 0.34 с возвратом
+            # 250 мс дают в паузе минус девятнадцать децибел, 0.22 с возвратом
+            # 700 мс - минус тридцать один. Медленный возврат означает, что в
+            # коротких паузах музыка просто не успевает подняться.
             ff(["-i",vo,"-i",mus,"-filter_complex",
-                "[0]"+CHISTKA+"[vc];[1]volume=0.34[m];[vc]asplit=2[v1][v2];"
-                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=250[md];"
+                "[0]"+CHISTKA+"[vc];[1]volume=0.22[m];[vc]asplit=2[v1][v2];"
+                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=700[md];"
                 "[v2][md]amix=inputs=2:normalize=0:duration=first,"
                 +LOUD+"[a]",
                 "-map","[a]","-t",f"{TOTAL:.2f}",aud])
@@ -1180,7 +1202,12 @@ def main():
                 parts.append(f"{prev}[v{i}]xfade=transition=fade:duration={XF}:offset={off:.3f}{out}")
                 prev=out; acc=acc+keep[i]-XF
             # мягкий вход и выход всего ролика, внутри - только наплывы
-            parts.append(f"[xf]fade=t=in:st=0:d=0.3,fade=t=out:st={max(0,TOTAL-0.4):.2f}:d=0.4{tag}")
+            # ВХОД БЕЗ ЗАТЕМНЕНИЯ. Instagram и TikTok берут обложкой первый
+            # кадр ролика, а он при затемнении чёрный: замерено, яркость ноль.
+            # В ленте это выглядит как пустой квадрат, и ролик просто не
+            # открывают. Выход из ролика затемняем как прежде, он обложкой не
+            # становится.
+            parts.append(f"[xf]fade=t=out:st={max(0,TOTAL-0.4):.2f}:d=0.4{tag}")
         if CTA_CARD:   # плашка «скачай» держится последние 4 секунды
             parts.append(f"[vc][{CI}:v]overlay=0:0:enable='between(t,{max(0,TOTAL-4):.2f},{TOTAL:.2f})'[v]")
         open(f"{WORK}/{lang}_yfg.txt","w").write(";".join(parts))
@@ -1225,8 +1252,8 @@ def main():
         if MUSIC and os.path.exists(MUSIC): mus=MUSIC
         else: mus=f"{WORK}/{lang}_mus.wav"; make_music(TOTAL,mus)
         ff(["-i",f"{WORK}/{lang}_vp.mp3","-i",mus,"-filter_complex",
-            "[0]"+CHISTKA+"[vc];[1]volume=0.34[m];[vc]asplit=2[v1][v2];"
-                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=250[md];"
+            "[0]"+CHISTKA+"[vc];[1]volume=0.22[m];[vc]asplit=2[v1][v2];"
+                "[m][v1]sidechaincompress=threshold=0.05:ratio=8:attack=5:release=700[md];"
                 "[v2][md]amix=inputs=2:normalize=0:duration=first,"
                 +LOUD+"[a]",
             "-map","[a]","-t",f"{TOTAL:.2f}",f"{WORK}/{lang}_aud.m4a"])
@@ -1238,7 +1265,10 @@ def main():
             st=0.4; Di=D[i]
             parts.append(f"[{i}:v]trim={st}:{st+Di:.3f},setpts=PTS-STARTPTS,"
                 f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30,format=yuv420p,"
-                f"fade=t=in:st=0:d={fd},fade=t=out:st={max(0,Di-fd):.3f}:d={fd}[v{i}]")
+                # У первого кадра ролика входа из черноты быть не должно:
+                # он идёт на обложку. У остальных вход оставляем, это склейка.
+                + (f"fade=t=out:st={max(0,Di-fd):.3f}:d={fd}[v{i}]" if i==0 else
+                   f"fade=t=in:st=0:d={fd},fade=t=out:st={max(0,Di-fd):.3f}:d={fd}[v{i}]"))
         parts.append("".join(f"[v{i}]" for i in range(N))+f"concat=n={N}:v=1:a=0[v]")
         open(f"{WORK}/{lang}_fg.txt","w").write(";".join(parts))
         try:
