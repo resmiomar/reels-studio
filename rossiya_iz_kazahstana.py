@@ -7,23 +7,27 @@
 же. Разными делаем только кадры - иначе Instagram сочтёт ролики дублями и
 прижмёт охват обоим.
 
-Что берём из готового казахстанского ролика:
+Писать новый монтаж не пришлось. В движке уже есть готовый ход: если рядом
+лежит папка с озвучкой, он берёт дорожку оттуда вместо синтеза. Мы этим
+пользовались для казахского, когда голоса на сервере не было. Здесь тот же
+приём, только дорожки не из старых роликов, а снятые с казахстанских.
 
-    звук целиком   голос, музыка, сведение - всё уже утверждено владельцем
-    длину          новый ролик обязан совпасть до кадра, иначе звук разъедется
+Что делает скрипт:
 
-Что делаем заново:
+    1  берёт готовый казахстанский ролик
+    2  снимает с него звук БЕЗ пересжатия - сведение уже утверждено владельцем
+    3  кладёт в assets/golos-rf/ под именем, которое движок ищет: NNN-rf.mp3
 
-    кадры          другие клипы из стока, ни один не повторяется
-    субтитры       текст тот же, но рисуются заново под новую картинку
+Дальше обычный прогон на языке rf. Движок увидит дорожку, синтез пропустит,
+а кадры наберёт заново по российским запросам к стоку - они в сценарии свои.
 
 Про цену. Шестьдесят два казахстанских ролика называют семь тысяч тенге.
 В России это чужая валюта и чужая цена. Владелец знает и принял: время
-дороже. Скрипт помечает такие ролики в отчёте, чтобы их можно было заменить
-позже, не пересматривая все сто пятьдесят шесть.
+дороже. Скрипт печатает их номера, чтобы заменить потом только их, а не
+пересматривать все сто пятьдесят шесть.
 
-    python rossiya_iz_kazahstana.py 001            один ролик
-    python rossiya_iz_kazahstana.py все            весь готовый Казахстан
+    python rossiya_iz_kazahstana.py                весь готовый Казахстан
+    python rossiya_iz_kazahstana.py 91 92 93       только эти номера
 """
 import json
 import os
@@ -32,87 +36,82 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# Откуда берём казахстанские ролики и куда кладём снятые дорожки.
 KZ = os.environ.get("KZ_DIR", "/Volumes/T7/ibook-reels/novye/ru")
-OUT = os.environ.get("RF_DIR", "/Volumes/T7/ibook-reels/novye/rf")
+GOLOS = os.environ.get("GOLOS_RF", os.path.join(HERE, "assets", "golos-rf"))
 CENA = re.compile(r"тенге|₸")
 
 
 def dlina(put):
     r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
                         "-of", "csv=p=0", put], capture_output=True, text=True)
-    return float(r.stdout.strip() or 0)
+    try:
+        return float(r.stdout.strip())
+    except ValueError:
+        return 0.0
 
 
-def zvuk_iz(video, kuda):
-    """Забрать звуковую дорожку как есть, без пересжатия: она уже утверждена."""
+def snyat_zvuk(video, kuda):
+    """Снять дорожку и привести к mp3: движок ждёт именно его.
+
+    Пересжатие тут неизбежно - в ролике звук в aac, а искомое имя с .mp3.
+    Берём высокий битрейт, чтобы утверждённое сведение не пострадало.
+    """
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", video, "-vn",
-                    "-c:a", "copy", kuda], check=True)
+                    "-c:a", "libmp3lame", "-q:a", "0", kuda], check=True)
     return dlina(kuda)
 
 
-def kadry_dlya(nomer, skolko, ispolzovano):
-    """Клипы под российскую версию. Берём ДРУГИЕ запросы к стоку, чтобы
-    картинка не совпала с казахстанской: там были свои, здесь свои."""
-    import reel_engine as dv
-    zaprosy = [
-        "russian woman using smartphone indoors",
-        "beauty salon interior modern bright",
-        "hairdresser working with client closeup",
-        "woman scrolling phone calendar app",
-        "happy client leaving salon smiling",
-        "manicure master hands working",
-        "young woman booking appointment online",
-        "barber shop chair empty morning",
-    ]
+def nomera_na_diske():
+    if not os.path.isdir(KZ):
+        return []
     out = []
-    for i in range(skolko):
-        q = zaprosy[(nomer + i) % len(zaprosy)]
-        cid, link = dv.find_clip(q, ispolzovano)
-        if link:
-            out.append((q, link))
+    for f in sorted(os.listdir(KZ)):
+        if f.startswith("._") or not f.endswith(".mp4"):
+            continue
+        m = re.match(r"(\d{3})-", f)
+        if m:
+            out.append(int(m.group(1)))
     return out
 
 
-def otchet(sdelano, s_cenoy):
-    print(f"\nсобрано роликов: {len(sdelano)}")
-    if s_cenoy:
-        print(f"\nВНИМАНИЕ: в {len(s_cenoy)} роликах звучит цена в тенге.")
-        print("Для России это чужая валюта. Номера, чтобы заменить позже:")
-        print("  " + " ".join(f"{n:03d}" for n in sorted(s_cenoy)))
-
-
 def main():
-    if len(sys.argv) < 2:
-        sys.exit(__doc__)
-    os.makedirs(OUT, exist_ok=True)
+    hochu = [int(x) for x in sys.argv[1:]] or nomera_na_diske()
+    if not hochu:
+        sys.exit(f"в {KZ} нет готовых казахстанских роликов")
+    os.makedirs(GOLOS, exist_ok=True)
+
     scen = json.load(open(os.path.join(HERE, "scenarii", "videos_ru.json"),
                           encoding="utf-8"))
-
-    if sys.argv[1] == "все":
-        nomera = []
-        for f in sorted(os.listdir(KZ)):
-            m = re.match(r"(\d{3})-", f)
-            if m and f.endswith(".mp4") and not f.startswith("._"):
-                nomera.append(int(m.group(1)))
-    else:
-        nomera = [int(sys.argv[1])]
-
-    sdelano, s_cenoy = [], []
-    for n in nomera:
+    sdelano, s_cenoy, propal = [], [], []
+    for n in hochu:
         ishod = os.path.join(KZ, f"{n:03d}-Казахстан-русский.mp4")
         if not os.path.exists(ishod):
-            print(f"  {n:03d}: казахстанского ролика нет, пропускаю")
+            propal.append(n)
+            continue
+        kuda = os.path.join(GOLOS, f"{n:03d}-rf.mp3")
+        d = snyat_zvuk(ishod, kuda)
+        if d < 3:
+            propal.append(n)
             continue
         if n <= len(scen) and CENA.search(scen[n - 1].get("vo", "")):
             s_cenoy.append(n)
-        zv = os.path.join(OUT, f"{n:03d}-zvuk.m4a")
-        d = zvuk_iz(ishod, zv)
-        print(f"  {n:03d}: звук снят, {d:.1f} сек")
         sdelano.append(n)
+        if len(sdelano) % 20 == 0:
+            print(f"  снято дорожек: {len(sdelano)}", flush=True)
 
-    otchet(sdelano, s_cenoy)
-    print(f"\nЗвуковые дорожки лежат в {OUT}")
-    print("Дальше их подхватит движок и наложит на другие кадры.")
+    print(f"\nснято дорожек: {len(sdelano)}")
+    if propal:
+        print(f"не нашлось роликов: {len(propal)} -> {propal[:12]}")
+    print(f"лежат в {GOLOS}")
+
+    if s_cenoy:
+        print(f"\nВ {len(s_cenoy)} роликах звучит цена в тенге - для России это")
+        print("чужая валюта. Номера, чтобы заменить их позже:")
+        print("  " + " ".join(f"{n:03d}" for n in sorted(s_cenoy)))
+
+    print("\nДальше: обычный прогон на языке rf. Движок увидит эти дорожки,")
+    print("синтез пропустит, кадры наберёт заново по российским запросам.")
 
 
 if __name__ == "__main__":
