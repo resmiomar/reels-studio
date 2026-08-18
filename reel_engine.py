@@ -166,8 +166,15 @@ QWEN_GOLOS={"de":["Vivian"],"zh":["Vivian"],"rf":["Vivian"],
 # Турецкий: Qwen его не знает, у Piper он один и средний. Chatterbox знает
 # турецкий официально, лицензия MIT.
 MCHAT_GOLOS={"tr":["1.0/0.3"]}
-# Узбекский: своя дообученная модель, характер задаётся «эмоция/напор».
-UZ_GOLOS={"uz":["1.0/0.3"]}
+# Узбекский. Дообученную модель владелец забраковал, и правильно: он этот язык
+# понимает, а она читала обрубками по четыре секунды и путала ударения.
+# Причина простая - узбекского в открытых наборах почти нет, дообучать не на чем.
+# ElevenLabs узбекский не знает НИ В ОДНОЙ модели: ни eleven_v3 с 74 языками,
+# ни multilingual_v2 с 29. Проверено запросом к /v1/models, узбекского в списке
+# нет. Значит платная подписка тут бесполезна, деньги её не решают.
+# Зато у Microsoft есть родной узбекский нейроголос, и он бесплатный.
+# Женский, как и просил владелец для остальных языков.
+UZ_GOLOS={"uz":["uz-UZ-MadinaNeural"]}
 VOICES={}
 for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     if _FORCE=="eleven":
@@ -175,7 +182,7 @@ for _l in ("kk","ru","rf","uk","uz","tr","zh","en","de","it","es","fr"):
     elif _l in MCHAT_GOLOS and _FORCE not in ("chatterbox","piper"):
         VOICES[_l]=[("mchat",v) for v in MCHAT_GOLOS[_l]]
     elif _l in UZ_GOLOS and _FORCE not in ("chatterbox","piper"):
-        VOICES[_l]=[("uzchat",v) for v in UZ_GOLOS[_l]]
+        VOICES[_l]=[("edge",v) for v in UZ_GOLOS[_l]]
     elif _l in QWEN_GOLOS and _FORCE not in ("chatterbox","piper"):
         VOICES[_l]=[("qwen",v) for v in QWEN_GOLOS[_l]]
     elif _l in NATIVE and _FORCE!="chatterbox":
