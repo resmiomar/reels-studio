@@ -274,6 +274,11 @@ JUNK={"a","an","the","of","in","on","at","with","and","or","his","her","their","
       "no","text","logos","logo","watermark","seconds","second","sec",
       "almaty","astana","kazakhstan","istanbul","paris","berlin","milan","madrid","shanghai",
       "moscow","kyiv","tashkent","modern","bright","clean"}
+# Кто в кадре. Эти слова тянут запрос к людям, а не к зданиям и пейзажам.
+KTO={"hairdresser","hairdressers","woman","women","man","men","client","clients",
+     "master","stylist","barber","girl","people","person","customer","customers",
+     "mother","father","doctor","cosmetologist","manicurist","owner","team"}
+
 def shot_query(prompt,lang=""):
     t=re.sub(r"[^A-Za-z ]"," ",prompt.lower())
     ws=[]
@@ -281,9 +286,21 @@ def shot_query(prompt,lang=""):
         w=SWAP.get(w,w)
         if w in JUNK or len(w)<3: continue
         if w not in ws: ws.append(w)
+    # Кто в кадре - вперёд, остальное следом. Иначе пятисловный предел режет
+    # именно человека: во фразе «empty salon with a row of unused chairs, the
+    # hairdresser wipes a mirror» до предела доходили «empty salon row unused
+    # chairs», а «hairdresser» отваливался. Оставшийся при этом «turkish» и
+    # решал дело: сток отдавал турецкую АРХИТЕКТУРУ, и в ролик про пустой
+    # салон попадала мечеть. Проверено глазами на готовом ролике.
+    lyudi=[w for w in ws if w in KTO]
+    ws=lyudi+[w for w in ws if w not in KTO]
     people=PEOPLE.get(lang,"")
     # типаж уже может стоять в самом сценарии («European hairdresser») - не дублируем
     if people and people in ws[:5]: people=""
+    # Народность просим ТОЛЬКО когда в кадре есть человек. На безлюдной сцене
+    # она превращается в туристический запрос: «turkish» плюс интерьер даёт
+    # мечети и базары, а не рабочее место мастера.
+    if people and not lyudi: people=""
     # 5 значимых слов сценария + типаж + якоря качества
     return " ".join([x for x in [people]+ws[:5]+["bright","modern"] if x])
 def shot_queries(card,lang=""):
