@@ -15,6 +15,9 @@ on:
       nedeli:
         description: "недели через пробел, или god - весь год"
         default: "31 32 33 34 35"
+      peresborka:
+        description: "1 - собрать заново уже готовое и НЕ слать в каналы"
+        default: "0"
   schedule:
     # Пока работаем только на двух языках: владелец сказал сначала принять
     # казахский и русский, остальные девять ждут его слова. Раньше здесь
@@ -47,10 +50,16 @@ jobs:
           pip install -q piper-tts requests httpx pillow onnxruntime unicode-rbnf sentence-stream
           # Немецкий говорит Qwen: у Piper нормального женского немецкого нет.
           # Ставим только для него - остальным языкам эти полгигабайта ни к чему.
-          if [ "${{ github.event.inputs.yazyk }}" = "de" ]; then
+          case "${{ github.event.inputs.yazyk }}" in de|zh)
             pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-            pip install -q soundfile qwen-tts
-          fi
+            pip install -q soundfile qwen-tts ;;
+          esac
+          # Узбекский идёт голосом Microsoft: ни Piper, ни Qwen, ни ElevenLabs
+          # его не знают. Пакет крошечный, качается за секунды, модель не
+          # скачивается вовсе - синтез идёт по сети.
+          case "${{ github.event.inputs.yazyk }}" in uz)
+            pip install -q edge-tts ;;
+          esac
 
       # Голоса и склад тянем из релиза: репозиторий их не выдержит, а в релизе
       # они лежат бесплатно и качаются за минуту.
@@ -100,6 +109,8 @@ jobs:
           # Раньше тут стояли жёстко недели августа - и ночь за ночью сервер
           # пересобирал одни и те же пятнадцать роликов.
           NEDELI: ${{ github.event.inputs.nedeli || 'god' }}
+          PERESBORKA: ${{ github.event.inputs.peresborka || '0' }}
+          NE_SLAT: ${{ github.event.inputs.peresborka || '0' }}
         run: python server_sborka.py
 
       # Список отправленного возвращаем в репозиторий. Прогоны идут параллельно,
@@ -114,6 +125,12 @@ jobs:
           # учёте осталась пятьдесят одна запись, и следующий запуск собрал бы
           # сто пять из них заново. Теперь свой список СКЛАДЫВАЕМ с серверным.
           cp otpravleno.json moe.json
+          # Свою копию сохранили - теперь возвращаем файл к состоянию из
+          # репозитория. Без этого «git checkout -B» отказывается переключать
+          # ветку: движок только что дописал в этот же файл, и git видит
+          # незакоммиченные правки. Два немецких потока упали ровно здесь,
+          # уже ПОСЛЕ того, как отправили сто пять роликов в канал.
+          git checkout -- otpravleno.json 2>/dev/null || true
           for i in 1 2 3 4 5; do
             # Каждая попытка начинается ЗАНОВО от свежего состояния сервера,
             # поэтому расхождения веток не возникает и повтор всегда возможен.
@@ -133,4 +150,6 @@ jobs:
         with:
           name: roliki
           path: out/*.mp4
-          retention-days: 7
+          # 90 дней, а не 7. На семи днях немецкий и китайский год
+          # стёрлись раньше, чем я успел снять копию на диск.
+          retention-days: 90
