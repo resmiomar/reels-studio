@@ -78,7 +78,11 @@ def pochinit(video, kuda=None):
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.3f}", "-i", video,
                     "-vframes", "1", kadr], check=True)
     itog = kuda or video
-    tmp = os.path.join(vrem, "gotovo.mp4")
+    # Временный файл держим РЯДОМ с целью, а не в системном temp. Системный
+    # temp лежит на внутреннем диске, цель - на внешнем, и os.replace через
+    # границу дисков не работает: «Cross-device link». На этом упала вся
+    # починка английского, уже после того, как ролик был пересобран.
+    tmp = os.path.join(os.path.dirname(os.path.abspath(itog)), ".gotovo_tmp.mp4")
     # Картинку кладём ПОВЕРХ первых кадров. Звук копируем без пересжатия:
     # сведение владелец утверждал на слух, портить его нельзя.
     subprocess.run([
