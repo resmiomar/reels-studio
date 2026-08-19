@@ -69,7 +69,13 @@ jobs:
       - name: Дождаться, пока сток поднимется
         env:
           PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
+        # Обязательно set +e. GitHub запускает шаг как «bash -e», а curl при
+        # обрыве по таймауту возвращает код 28 - и шаг падал на ПЕРВОМ же
+        # круге вместо того, чтобы ждать. Проверено: прогон умер через шесть
+        # минут, хотя должен был ждать час.
+        shell: bash
         run: |
+          set +e
           for i in $(seq 1 60); do
             K=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 \
                 -H "Authorization: $PEXELS_KEY" \
