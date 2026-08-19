@@ -104,17 +104,33 @@ def main():
     else:
         faily = [cel]
 
+    # Оригиналы не трогаем. Владелец просил ничего не затирать, и это разумно:
+    # если починка где-то сработает криво, вернуться будет не к чему.
+    # Исправленные кладём в соседнюю папку с тем же именем.
+    kuda_dir = os.environ.get("KUDA")
+    if not kuda_dir and os.path.isdir(cel):
+        kuda_dir = cel.rstrip("/") + "-oblozhka"
+    if kuda_dir:
+        os.makedirs(kuda_dir, exist_ok=True)
+
     chinili = uzhe = 0
     for f in faily:
-        t, bylo, stalo = pochinit(f)
+        out = os.path.join(kuda_dir, os.path.basename(f)) if kuda_dir else None
+        if out and os.path.exists(out):
+            uzhe += 1
+            continue
+        t, bylo, stalo = pochinit(f, out)
         if t is None:
             uzhe += 1
             continue
         chinili += 1
-        print(f"  {os.path.basename(f)[:36]:38} было {bylo:5.1f} -> стало {stalo:5.1f}"
-              f"   накрыто {t:.2f} сек", flush=True)
+        if chinili % 10 == 0 or chinili < 4:
+            print(f"  {os.path.basename(f)[:36]:38} было {bylo:5.1f} -> стало {stalo:5.1f}"
+                  f"   накрыто {t:.2f} сек", flush=True)
 
-    print(f"\nпочинено: {chinili}, и так были в порядке: {uzhe}")
+    print(f"\nпочинено: {chinili}, пропущено: {uzhe}")
+    if kuda_dir:
+        print(f"исправленные лежат в {kuda_dir}, оригиналы не тронуты")
 
 
 if __name__ == "__main__":
