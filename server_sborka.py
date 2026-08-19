@@ -109,7 +109,7 @@ def sobrat(week, slot):
     # «нужен Mac». Теперь смысла в этом нет: eleven_v3 знает оба языка, а голос
     # у нас свой и оплаченный. Заодно канал звучит ОДНИМ голосом на всех
     # рынках, а не разными дикторами - для бренда это важнее экономии.
-    if YAZYK in ("ru", "rf", "tr", "uk"):
+    if YAZYK in ("ru", "rf", "tr", "uk", "uz"):
         # Голос Лауры вернули, а не пересоздали на слух. Прежний id жил на
         # аккаунте, который слетел с подписки, и API отвечал на него 404.
         # Сделанный заново клон звучал ЧУЖИМ: тело 37.6 против 17.7 у роликов,
@@ -130,7 +130,7 @@ def sobrat(week, slot):
         # значило бы сменить диктора посреди года на глазах у зрителя.
         LAURA = "eleven:qP3VjBPIq0oEfABcWfPb"
         BALA = "eleven:thuhwPAHzg8zEi3MJ9rf"
-        if YAZYK in ("tr", "uk"):
+        if YAZYK in ("tr", "uk", "uz"):
             env["VOICE_" + YAZYK.upper()] = LAURA if nomer(week, slot) % 2 else BALA
         else:
             env["VOICE_" + YAZYK.upper()] = LAURA
