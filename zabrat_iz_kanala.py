@@ -91,6 +91,11 @@ def skachat(t, file_id, kuda):
 def main():
     lang = sys.argv[1] if len(sys.argv) > 1 else "zh"
     predel = int(sys.argv[2]) if len(sys.argv) > 2 else 300
+    # Откуда начинать просмотр. Ролики в каналах лежат НЕ с начала: сперва идут
+    # картинки каруселей, и в украинском видео начинаются лишь около тысячного
+    # сообщения. Просматривать всё подряд - это лишние пятнадцать минут на язык,
+    # по секунде за сообщение.
+    nachalo = int(sys.argv[3]) if len(sys.argv) > 3 else 1
     t = token()
     kan = kanal(lang)
     est = est_na_diske(lang)
@@ -99,12 +104,12 @@ def main():
     if not nado:
         print("  всё на месте")
         return
-    print(f"  ищу в канале {kan}, сообщения 1-{predel}\n")
+    print(f"  ищу в канале {kan}, сообщения {nachalo}-{predel}\n")
 
     kuda_p = os.path.join(BAZA, lang)
     os.makedirs(kuda_p, exist_ok=True)
     vzyato = propal = 0
-    for mid in range(1, predel + 1):
+    for mid in range(nachalo, predel + 1):
         if not nado:
             break
         d = zapros(t, "forwardMessage", chat_id=kan, from_chat_id=kan, message_id=mid)
