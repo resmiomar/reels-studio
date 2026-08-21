@@ -23,6 +23,7 @@
     python pochinit_oblozhku.py /путь/к/папке          все в папке
 """
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -125,6 +126,13 @@ def main():
             continue
         t, bylo, stalo = pochinit(f, out)
         if t is None:
+            # Обложка и так нормальная - у роликов, собранных ПОСЛЕ правки
+            # движка, чёрного первого кадра нет вовсе. Но в готовую папку их
+            # всё равно надо положить: она должна содержать ВЕСЬ язык, а не
+            # только починенное. Иначе русский оказывался там в двадцати восьми
+            # роликах из ста пятидесяти шести, а узбекский - в нуле.
+            if out and not os.path.exists(out):
+                shutil.copy2(f, out)
             uzhe += 1
             continue
         chinili += 1
