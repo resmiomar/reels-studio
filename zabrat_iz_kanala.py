@@ -25,6 +25,7 @@ import sys
 import time
 import urllib.request
 import urllib.parse
+import urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BAZA = "/Volumes/T7/ibook-reels/novye"
@@ -38,12 +39,36 @@ def token():
 
 
 def zapros(t, metod, **par):
+    """Запрос к Telegram с выдержкой.
+
+    Гнать пересылки без пауз нельзя. Прогнав подряд четыре языка - больше
+    тысячи запросов - я поймал «Too Many Requests: retry after 621»: Telegram
+    запер бота на десять минут, и казахский добор встал на нуле, хотя бот в
+    канале администратор и всё было исправно.
+
+    Правильный ответ на этот отказ один: подождать РОВНО столько, сколько
+    просят, и продолжить. Долбиться в закрытую дверь бессмысленно - счётчик
+    от этого только растёт.
+    """
     u = f"https://api.telegram.org/bot{t}/{metod}?" + urllib.parse.urlencode(par)
-    try:
-        with urllib.request.urlopen(u, timeout=60) as r:
-            return json.load(r)
-    except Exception as e:
-        return {"ok": False, "description": str(e)[:80]}
+    for popytka in range(4):
+        try:
+            with urllib.request.urlopen(u, timeout=60) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            try:
+                d = json.loads(e.read().decode())
+            except Exception:
+                return {"ok": False, "description": f"код {e.code}"}
+            zhdat = (d.get("parameters") or {}).get("retry_after")
+            if zhdat and popytka < 3:
+                print(f"    Telegram просит подождать {zhdat} сек", flush=True)
+                time.sleep(int(zhdat) + 2)
+                continue
+            return d
+        except Exception as e:
+            time.sleep(5)
+    return {"ok": False, "description": "не достучались"}
 
 
 def kanal(lang):
@@ -132,7 +157,7 @@ def main():
             nado.remove(nom)
             vzyato += 1
             print(f"    {nom:03d}: забран ({vzyato}, осталось {len(nado)})", flush=True)
-        time.sleep(1)
+        time.sleep(2)
 
     print(f"\n  забрано {vzyato}, не найдено в канале {len(nado)}")
     if nado:
