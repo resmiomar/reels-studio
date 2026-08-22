@@ -23,6 +23,7 @@
     python pochinit_oblozhku.py /путь/к/папке          все в папке
 """
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -78,7 +79,11 @@ def pochinit(video, kuda=None):
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.3f}", "-i", video,
                     "-vframes", "1", kadr], check=True)
     itog = kuda or video
-    tmp = os.path.join(vrem, "gotovo.mp4")
+    # Временный файл держим РЯДОМ с целью, а не в системном temp. Системный
+    # temp лежит на внутреннем диске, цель - на внешнем, и os.replace через
+    # границу дисков не работает: «Cross-device link». На этом упала вся
+    # починка английского, уже после того, как ролик был пересобран.
+    tmp = os.path.join(os.path.dirname(os.path.abspath(itog)), ".gotovo_tmp.mp4")
     # Картинку кладём ПОВЕРХ первых кадров. Звук копируем без пересжатия:
     # сведение владелец утверждал на слух, портить его нельзя.
     subprocess.run([
@@ -121,6 +126,13 @@ def main():
             continue
         t, bylo, stalo = pochinit(f, out)
         if t is None:
+            # Обложка и так нормальная - у роликов, собранных ПОСЛЕ правки
+            # движка, чёрного первого кадра нет вовсе. Но в готовую папку их
+            # всё равно надо положить: она должна содержать ВЕСЬ язык, а не
+            # только починенное. Иначе русский оказывался там в двадцати восьми
+            # роликах из ста пятидесяти шести, а узбекский - в нуле.
+            if out and not os.path.exists(out):
+                shutil.copy2(f, out)
             uzhe += 1
             continue
         chinili += 1
